@@ -436,8 +436,9 @@
         const cards = document.querySelectorAll('.glass-card');
 
         document.addEventListener('mousemove', (e) => {
-            const xAxis = (window.innerWidth / 2 - e.pageX) / 40;
-            const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+            // Very subtle movement (divided by 250 instead of 40)
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 250;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 250;
 
             cards.forEach(card => {
                 card.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
