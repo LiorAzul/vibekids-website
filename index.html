@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeKids - הדור החדש של המתכנתים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Mode Variables (Default overrides via class) */
+            --bg-deep: #050508;
+            --text-main: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --highlight: rgba(255, 255, 255, 0.4);
+            --accent: #00f2ff;
+            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --logo-filter: invert(1); /* White logo for dark background */
+        }
+
+        body.light-mode {
+            --bg-deep: #f0f4f8;
+            --text-main: #1a202c;
+            --text-secondary: rgba(26, 32, 44, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --highlight: rgba(255, 255, 255, 0.8);
+            --accent: #0070f3;
+            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            --logo-filter: invert(0); /* Black logo for light background */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            position: relative;
+        }
+
+        /* Abstract Liquid Background Shapes */
+        .orb-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            animation: drift 20s infinite alternate;
+        }
+
+        .orb-1 {
+            width: 60vw;
+            height: 60vw;
+            max-width: 600px;
+            max-height: 600px;
+            background: linear-gradient(45deg, #4f46e5, #9333ea);
+            top: -100px;
+            left: -100px;
+            opacity: 0.4;
+        }
+
+        .orb-2 {
+            width: 50vw;
+            height: 50vw;
+            max-width: 500px;
+            max-height: 500px;
+            background: linear-gradient(45deg, #06b6d4, #3b82f6);
+            bottom: -50px;
+            right: -50px;
+            opacity: 0.3;
+            animation-delay: -5s;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px; /* RTL - left side */
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--highlight);
+        }
+
+        .logo {
+            width: 180px;
+            max-width: 80%;
+            height: auto;
+            margin-bottom: 16px;
+            filter: var(--logo-filter);
+            transition: filter 0.5s ease;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to bottom right, var(--text-main) 50%, rgba(125,125,125,0.4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        /* Main Content */
+        main {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            padding-bottom: 80px;
+        }
+
+        section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        /* Glass Container (reused style) */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                var(--card-shadow),
+                inset 0 1px 1px var(--highlight),
+                inset 0 10px 20px rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Video Embed */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Content Section */
+        .content-text {
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Links Section */
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .liquid-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 16px 24px;
+            border-radius: 100px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .liquid-button {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: var(--text-main);
+        }
+
+        .liquid-button:hover {
+            background: var(--text-main);
+            color: var(--bg-deep);
+            transform: scale(1.02);
+        }
+        
+        .liquid-button.primary {
+            font-size: 1.3rem;
+            padding: 20px 32px;
+            background: rgba(37, 211, 102, 0.2); /* WhatsApp greenish tint */
+            border-color: rgba(37, 211, 102, 0.4);
+        }
+        
+        .liquid-button.primary:hover {
+            background: #25D366;
+            color: white;
+        }
+
+        .liquid-button img.icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .app-store-btn {
+            display: flex;
+            align-items: center;
+            text-align: right; /* Text aligns to right since it's RTL */
+            gap: 15px;
+        }
+
+        .app-store-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+        }
+
+        .app-store-text {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.9rem;
+            line-height: 1.2;
+        }
+        
+        .app-store-text small {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .small-desc {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <header>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark/Light Mode">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+
+        <!-- Logo with invert filter logic in CSS -->
+        <img src="vibekids logo.svg" alt="VibeKids Logo" class="logo">
+        <div class="subtitle">הדור החדש של המתכנתים</div>
+    </header>
+
+    <main>
+        <!-- Section 1: Guides -->
+        <section>
+            <h2 class="section-title">מדריכים</h2>
+            <div class="glass-card">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/7zgshGN2MLo" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: More Content -->
+        <section>
+            <h2 class="section-title">עוד תוכן בקרוב...</h2>
+            <div class="glass-card">
+                <p class="content-text">
+                    אתם יכולים לשלוח תוכן דרך אחת הקבוצות וכאשר יעבור אישור, נפרסם אותו ממש כאן
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 3: Links -->
+        <section>
+            <h2 class="section-title">קישורים</h2>
+            <div class="links-container">
+                <!-- WhatsApp -->
+                <a href="https://chat.whatsapp.com/ISBH9r08Kpl0fp2NTL4kDT" target="_blank" class="liquid-button primary">
+                    הצטרפו לקבוצה בווטסאפ
+                    <!-- Simple WhatsApp Icon SVG -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                </a>
+                
+                <!-- Facebook -->
+                <a href="https://www.facebook.com/share/g/18DEoUM5Q7/?mibextid=wwXIfr" target="_blank" class="liquid-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036c-2.148 0-2.971.956-2.971 3.035v.938h4.038l-1.443 3.665h-2.595v7.98c5.756-1.75 9.124-7.404 7.307-13.16-1.258-3.985-4.664-6.915-8.809-7.575V2.833c-6.209.692-10.824 6.002-10.824 12.35 0 3.736 1.637 7.07 4.181 9.374.963.854 2.112 1.492 3.392 1.851.304.085.66.084 1.006-.04.346-.124.646-.356.84-.666z"/></svg>
+                    הצטרפו לקבוצה בפייסבוק
+                </a>
+
+                <!-- App Store -->
+                <a href="https://apps.apple.com/il/app/vibekids/id6756629285" target="_blank" class="liquid-button app-store-btn">
+                    <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/83/b8/36/83b836fb-f53e-86e6-129b-b02f9f226851/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg" alt="App Icon" class="app-store-icon">
+                    <div class="app-store-text">
+                        <small>הורד עכשיו ב-</small>
+                        App Store
+                    </div>
+                </a>
+                
+                <p class="small-desc">רשת חברתית חינמית לנו, חברי הקבוצה</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Light/Dark Mode Toggle
+        const toggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Check for saved preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            body.className = savedTheme;
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                localStorage.setItem('theme', '');
+            } else {
+                body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light-mode');
+            }
+        });
+
+        // 3D Tilt Effect for Glass Cards
+        const cards = document.querySelectorAll('.glass-card');
+
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 40;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+
+            cards.forEach(card => {
+                card.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            });
+        });
+        
+        // Reset tilt on mouse leave (optional, mostly relevant if cards were hovered individually, but here it's global effect)
+        document.addEventListener('mouseleave', () => {
+             cards.forEach(card => {
+                card.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg)`;
+            });
+        });
+    </script>
+</body>
+</html>
