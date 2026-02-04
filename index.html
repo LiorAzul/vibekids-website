@@ -129,9 +129,9 @@
         }
 
         .logo {
-            width: 180px;
+            width: 278px;
             max-width: 80%;
-            height: auto;
+            height: 121px;
             margin-bottom: 16px;
             filter: var(--logo-filter);
             transition: filter 0.5s ease;
@@ -316,6 +316,158 @@
             margin-top: 10px;
         }
 
+        /* Tools Table */
+        .tools-card {
+            padding: 24px;
+        }
+
+        .tools-table-wrapper {
+            width: 100%;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tools-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tools-table thead {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .tools-table th,
+        .tools-table td {
+            padding: 16px 18px;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .tools-table th {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .tools-table td {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .tools-table tbody tr {
+            border-top: 1px solid var(--glass-border);
+            transition: background 0.2s ease;
+        }
+
+        .tools-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .tool-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .tool-link:hover {
+            color: var(--accent);
+        }
+
+        .tool-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px;
+            object-fit: contain;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+        }
+
+        @media (max-width: 720px) {
+            .tools-table thead {
+                display: none;
+            }
+
+            .tools-table,
+            .tools-table tbody,
+            .tools-table tr,
+            .tools-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .tools-table tr {
+                padding: 12px 0;
+            }
+
+            .tools-table td {
+                padding: 8px 16px;
+            }
+
+            .tools-table td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                margin-bottom: 4px;
+            }
+        }
+
+        /* Creators Section */
+        .creator-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .creator-photo {
+            width: 160px;
+            height: 160px;
+            border-radius: 24px;
+            object-fit: cover;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .creator-info {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .creator-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .creator-desc {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tiny-link {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 1px dashed transparent;
+        }
+
+        .tiny-link:hover {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
     </style>
 </head>
 <body>
@@ -350,10 +502,6 @@
         <section>
             <h2 class="section-title">מדריכים</h2>
             <div class="glass-card">
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/7zgshGN2MLo" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                </div>
-                
                 <div class="pdf-container" style="margin-top: 30px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 class="subtitle" style="font-size: 1.2rem; margin: 0;">מדריך - xcode-cursor</h3>
@@ -372,11 +520,28 @@
 
         <!-- Section 2: More Content -->
         <section>
-            <h2 class="section-title">עוד תוכן בקרוב...</h2>
             <div class="glass-card">
                 <p class="content-text">
                     אתם יכולים לשלוח תוכן דרך אחת הקבוצות וכאשר יעבור אישור, נפרסם אותו ממש כאן
                 </p>
+            </div>
+        </section>
+
+        <!-- Section 3: Tools Table -->
+        <section>
+            <h2 class="section-title">כלי וייב קודינג פופולריים</h2>
+            <div class="glass-card tools-card">
+                <div class="tools-table-wrapper">
+                    <table class="tools-table" aria-label="כלים פופולריים לוייב קודינג">
+                        <thead>
+                            <tr>
+                                <th>אתר</th>
+                                <th>תיאור</th>
+                            </tr>
+                        </thead>
+                        <tbody id="toolsTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -409,6 +574,21 @@
                 <p class="small-desc">רשת חברתית חינמית לנו, חברי הקבוצה</p>
             </div>
         </section>
+
+        <!-- Section 4: Creators -->
+        <section>
+            <h2 class="section-title">יוצרי הקהילה</h2>
+            <div class="glass-card creator-card">
+                <img src="IMG_2973.png" alt="ליאור - מנהל הקהילה" class="creator-photo">
+                <div class="creator-info">
+                    <div class="creator-name">ליאור</div>
+                    <p class="creator-desc">בן 24 מרחובות, מאמין שהרובוטים כאן להשתלט על העולם</p>
+                    <a class="tiny-link" href="https://www.youtube.com/@vibekidsone" target="_blank" rel="noopener noreferrer">
+                        ערוץ היוטיוב
+                    </a>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -432,25 +612,134 @@
             }
         });
 
-        // 3D Tilt Effect for Glass Cards
-        const cards = document.querySelectorAll('.glass-card');
+        const tools = [
+            {
+                name: 'Lovable',
+                url: 'https://lovable.dev/',
+                description: 'פופלרי, פשוט'
+            },
+            {
+                name: 'Base44',
+                url: 'https://base44.com/',
+                description: 'פופלרי בישראל, מיזם ישראלי'
+            },
+            {
+                name: 'V0',
+                url: 'https://v0.app/',
+                description: 'מבית אתר אחסון האתרים vercel'
+            },
+            {
+                name: 'Bolt.new',
+                url: 'https://bolt.new/',
+                description: 'מריץ node.js וטרמינל'
+            },
+            {
+                name: 'replit',
+                url: 'https://replit.com/',
+                description: 'גם למתחילים ולמפתחים מנוסים'
+            },
+            {
+                name: 'Google AI Studio',
+                url: 'https://aistudio.google.com/apps',
+                description: 'מבית גוגל, עם תמיכה בשירותי גוגל כמו nano banana'
+            },
+            {
+                name: 'Github copilot',
+                url: 'https://github.com/copilot',
+                description: 'מבית גיטהאב'
+            },
+            {
+                name: 'Cursor',
+                url: 'https://cursor.com/',
+                description: 'פופלרי (הורדה למחשב)'
+            },
+            {
+                name: 'Antigravity',
+                url: 'https://antigravity.google/',
+                description: 'מאת גוגל, הורדה למחשב'
+            },
+            {
+                name: 'Codex',
+                url: 'https://openai.com/codex/',
+                description: 'מאת OpenAI'
+            },
+            {
+                name: 'gemini cli',
+                url: 'https://geminicli.com/',
+                description: 'בטרמינל של המחשב'
+            },
+            {
+                name: 'Claude code',
+                url: 'https://claude.com/product/claude-code',
+                description: 'בטרמינל של המחשב, פופלרי עם יכולות מרשימות'
+            }
+        ];
 
-        document.addEventListener('mousemove', (e) => {
-            // Very subtle movement (divided by 250 instead of 40)
-            const xAxis = (window.innerWidth / 2 - e.pageX) / 250;
-            const yAxis = (window.innerHeight / 2 - e.pageY) / 250;
+        const toolsTableBody = document.getElementById('toolsTableBody');
 
-            cards.forEach(card => {
-                card.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        const placeholderIcon = encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">' +
+            '<rect width="64" height="64" rx="12" fill="rgba(255,255,255,0.2)"/>' +
+            '<path d="M20 34h24" stroke="rgba(255,255,255,0.7)" stroke-width="4" stroke-linecap="round"/>' +
+            '</svg>'
+        );
+
+        const getFaviconServiceUrl = (domain) =>
+            `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+        const setFavicon = (img) => {
+            const domain = img.dataset.domain;
+            if (!domain) return;
+            img.src = getFaviconServiceUrl(domain);
+        };
+
+        if (toolsTableBody) {
+            tools.forEach((tool) => {
+                const row = document.createElement('tr');
+
+                const siteCell = document.createElement('td');
+                siteCell.setAttribute('data-label', 'אתר');
+
+                const link = document.createElement('a');
+                link.href = tool.url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'tool-link';
+
+                const icon = document.createElement('img');
+                icon.className = 'tool-icon';
+                icon.alt = `${tool.name} favicon`;
+                icon.src = `data:image/svg+xml;utf8,${placeholderIcon}`;
+
+                const hostname = new URL(tool.url).hostname;
+                icon.dataset.domain = hostname;
+                icon.dataset.fallback = `https://${hostname}/favicon.ico`;
+            icon.onerror = () => {
+                const fallback = icon.dataset.fallback;
+                if (fallback && icon.src !== fallback) {
+                    icon.src = fallback;
+                }
+            };
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = tool.name;
+
+                link.append(icon, nameSpan);
+                siteCell.appendChild(link);
+
+                const descCell = document.createElement('td');
+                descCell.setAttribute('data-label', 'תיאור');
+                descCell.textContent = tool.description;
+
+                row.append(siteCell, descCell);
+                toolsTableBody.appendChild(row);
             });
-        });
-        
-        // Reset tilt on mouse leave (optional, mostly relevant if cards were hovered individually, but here it's global effect)
-        document.addEventListener('mouseleave', () => {
-             cards.forEach(card => {
-                card.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg)`;
+
+            const iconImages = toolsTableBody.querySelectorAll('.tool-icon');
+            iconImages.forEach((img) => {
+                setFavicon(img);
             });
-        });
+        }
     </script>
 </body>
 </html>
