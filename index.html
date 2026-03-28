@@ -768,7 +768,11 @@ async function showProfile(profileId) {
             ${isOwn ? `<button class="glass-btn primary" style="width:100%;margin:12px 0 20px" onclick="openCreateForm('app')">העלה אפליקציה חדשה</button>` : ''}
             ${prof?.youtube_channel_id ? `
                 <h3 class="section-title" style="font-size:1.2rem;margin-top:8px">סרטונים</h3>
-                <div class="yt-embed"><iframe src="https://www.youtube.com/embed/videoseries?list=UU${esc(prof.youtube_channel_id.replace(/^UC/,''))}" allowfullscreen loading="lazy"></iframe></div>
+                <div id="profileYtVideos"><div class="spinner"></div></div>
+            ` : ''}
+            ${prof?.github_url ? `
+                <h3 class="section-title" style="font-size:1.2rem;margin-top:8px">GitHub</h3>
+                <div id="profileGithubRepos"><div class="spinner"></div></div>
             ` : ''}
             <h3 class="section-title" style="font-size:1.2rem;margin-top:8px">אפליקציות (${apps.length})</h3>
             ${apps.length ? apps.map(a => {
@@ -793,6 +797,13 @@ async function showProfile(profileId) {
                 if (pp) { openPromptFromData(pp.title, pp.content); }
             });
         });
+        // Load YouTube videos for this profile
+        if (prof?.youtube_channel_id) {
+            loadProfileYtVideos(prof.youtube_channel_id);
+        }
+        if (prof?.github_url) {
+            loadProfileGithubRepos(prof.github_url);
+        }
     } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת הפרופיל</div></div>'; }
 }
 
@@ -858,7 +869,7 @@ function renderMembers() {
 async function loadYtVideos() {
     const el = document.getElementById('ytVideosList');
     try {
-        const result = await ytApi('search_videos', { query: 'vibe coding', max_results: 5 });
+        const result = await ytApi('search_videos', { query: 'vibe coding', max_results: 6, order: 'viewCount' });
         if (!result.videos?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">אין סרטונים</div></div>'; return; }
         el.innerHTML = result.videos.map(v => `
             <a href="https://www.youtube.com/watch?v=${esc(v.video_id)}" target="_blank" rel="noopener" class="yt-card glass">
@@ -969,6 +980,45 @@ function handleAvatarClick() {
         loadMyPosts();
         openModal('modalProfile');
     } else { openModal('modalAuth'); }
+}
+
+// ====== PROFILE GITHUB REPOS ======
+async function loadProfileGithubRepos(githubUrl) {
+    const el = document.getElementById('profileGithubRepos');
+    if (!el) return;
+    try {
+        const username = new URL(githubUrl).pathname.replace(/^\//, '').split('/')[0];
+        if (!username) { el.innerHTML = ''; return; }
+        const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=3`);
+        const repos = await res.json();
+        if (!Array.isArray(repos) || !repos.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem">אין פרויקטים</div>'; return; }
+        el.innerHTML = repos.map(r => `
+            <a href="${esc(r.html_url)}" target="_blank" rel="noopener" class="app-card glass" style="text-decoration:none;color:var(--text)">
+                <div class="app-icon" style="background:var(--surface);font-size:1.2rem;color:var(--text-dim)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                </div>
+                <div class="app-info">
+                    <div class="app-name">${esc(r.name)}</div>
+                    <div class="app-desc">${esc(r.description || '')}</div>
+                </div>
+            </a>
+        `).join('');
+    } catch { el.innerHTML = ''; }
+}
+
+// ====== PROFILE YOUTUBE VIDEOS ======
+async function loadProfileYtVideos(channelId) {
+    const el = document.getElementById('profileYtVideos');
+    if (!el) return;
+    try {
+        const result = await ytApi('channel_videos', { channel_id: channelId, max_results: 3 });
+        if (!result.videos?.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem">אין סרטונים</div>'; return; }
+        el.innerHTML = result.videos.map(v => `
+            <div class="yt-embed" style="margin-bottom:14px">
+                <iframe src="https://www.youtube.com/embed/${esc(v.video_id)}" allowfullscreen loading="lazy"></iframe>
+            </div>
+        `).join('');
+    } catch { el.innerHTML = ''; }
 }
 
 // ====== YOUTUBE CHANNEL SEARCH ======
