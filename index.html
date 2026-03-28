@@ -658,7 +658,7 @@ function renderApps(apps) {
         const fav = a.icon_url || getFavicon(url);
         const p = a.profiles;
         return `<div class="app-card glass" onclick="showAppDetail('${a.id}')">
-            <div class="app-icon"><img src="${esc(fav)}" alt="" data-resolve-url="${esc(url)}" onerror="this.parentElement.innerHTML='📱'"></div>
+            <div class="app-icon"><img src="${esc(fav)}" alt="" data-resolve-url="${esc(url)}" onerror="this.onerror=null;this.style.display='none'"></div>
             <div class="app-info">
                 <div class="app-name">${esc(a.name)}</div>
                 <div class="app-desc">${esc(a.description||'')}</div>
@@ -675,10 +675,11 @@ function renderApps(apps) {
         const url = img.dataset.resolveUrl;
         if (!url) return;
         try {
-            const u = new URL(url);
-            if (u.hostname.includes('apps.apple.com') || u.hostname.includes('play.google.com')) {
-                const resolved = await resolveAppIcon(url);
-                if (resolved && img.parentElement) img.src = resolved;
+            const resolved = await resolveAppIcon(url);
+            if (resolved && img.parentElement) {
+                img.style.display = '';
+                img.onerror = null;
+                img.src = resolved;
             }
         } catch {}
     });
@@ -749,7 +750,7 @@ async function showProfile(profileId) {
             ${apps.length ? apps.map(a => {
                 const url = getAppUrl(a); const fav = a.icon_url || getFavicon(url);
                 return `<div class="app-card glass" onclick="showAppDetail('${a.id}')">
-                    <div class="app-icon"><img src="${esc(fav)}" alt="" onerror="this.parentElement.innerHTML='📱'"></div>
+                    <div class="app-icon"><img src="${esc(fav)}" alt="" onerror="this.onerror=null;this.style.display='none'"></div>
                     <div class="app-info"><div class="app-name">${esc(a.name)}</div><div class="app-desc">${esc(a.description||'')}</div></div>
                 </div>`;
             }).join('') : '<div class="empty-state"><div class="empty-state-text">אין אפליקציות עדיין</div></div>'}
