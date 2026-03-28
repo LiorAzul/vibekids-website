@@ -2,744 +2,1337 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VibeKids - הדור החדש של המתכנתים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ========== VARIABLES ========== */
         :root {
-            /* Light Mode Variables (Default overrides via class) */
-            --bg-deep: #050508;
-            --text-main: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --highlight: rgba(255, 255, 255, 0.4);
-            --accent: #00f2ff;
-            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            --logo-filter: invert(1); /* White logo for dark background */
+            --bg: #050508;
+            --surface: rgba(255,255,255,0.04);
+            --surface-hover: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.1);
+            --border-strong: rgba(255,255,255,0.2);
+            --text: #ffffff;
+            --text-dim: rgba(255,255,255,0.6);
+            --text-muted: rgba(255,255,255,0.4);
+            --accent: #6366f1;
+            --accent-glow: rgba(99,102,241,0.3);
+            --green: #22c55e;
+            --pink: #ec4899;
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --glass-blur: 20px;
+            --glass-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --radius-full: 100px;
+            --nav-height: 72px;
+            --top-height: 60px;
         }
 
-        body.light-mode {
-            --bg-deep: #f0f4f8;
-            --text-main: #1a202c;
-            --text-secondary: rgba(26, 32, 44, 0.7);
-            --glass-bg: rgba(255, 255, 255, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --highlight: rgba(255, 255, 255, 0.8);
-            --accent: #0070f3;
-            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-            --logo-filter: invert(0); /* Black logo for light background */
+        body.light {
+            --bg: #f0f2f5;
+            --surface: rgba(255,255,255,0.6);
+            --surface-hover: rgba(255,255,255,0.8);
+            --border: rgba(0,0,0,0.08);
+            --border-strong: rgba(0,0,0,0.15);
+            --text: #1a1a2e;
+            --text-dim: rgba(26,26,46,0.6);
+            --text-muted: rgba(26,26,46,0.35);
+            --glass-shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ========== RESET ========== */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { height: 100%; }
         body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
             font-family: 'Heebo', sans-serif;
-            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100%;
             overflow-x: hidden;
-            transition: background-color 0.5s ease, color 0.5s ease;
-            position: relative;
+            transition: background 0.4s, color 0.4s;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Abstract Liquid Background Shapes */
-        .orb-container {
+        /* ========== SHADER BACKGROUND ========== */
+        #shader-bg {
             position: fixed;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             z-index: 0;
-            filter: blur(80px);
+            opacity: 0.35;
             pointer-events: none;
         }
+        body.light #shader-bg { opacity: 0.15; }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            animation: drift 20s infinite alternate;
-        }
-
-        .orb-1 {
-            width: 60vw;
-            height: 60vw;
-            max-width: 600px;
-            max-height: 600px;
-            background: linear-gradient(45deg, #4f46e5, #9333ea);
-            top: -100px;
-            left: -100px;
-            opacity: 0.4;
-        }
-
-        .orb-2 {
-            width: 50vw;
-            height: 50vw;
-            max-width: 500px;
-            max-height: 500px;
-            background: linear-gradient(45deg, #06b6d4, #3b82f6);
-            bottom: -50px;
-            right: -50px;
-            opacity: 0.3;
-            animation-delay: -5s;
-        }
-
-        @keyframes drift {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(50px, 30px) scale(1.1); }
-        }
-
-        /* Header */
-        header {
-            position: relative;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .theme-toggle {
-            position: absolute;
-            top: 20px;
-            left: 20px; /* RTL - left side */
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-main);
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
+        /* ========== GLASS EFFECTS ========== */
+        .glass {
+            background: var(--surface);
+            backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+            border: 1px solid var(--border);
+            box-shadow: var(--glass-shadow);
+            border-radius: var(--radius);
             transition: all 0.3s ease;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            background: var(--highlight);
-        }
+        .glass:hover { border-color: var(--border-strong); }
 
-        .logo {
-            width: 278px;
-            max-width: 80%;
-            height: 121px;
-            margin-bottom: 16px;
-            filter: var(--logo-filter);
-            transition: filter 0.5s ease;
-        }
-
-        .subtitle {
-            font-size: 1.5rem;
-            font-weight: 600;
-            background: linear-gradient(to bottom right, var(--text-main) 50%, rgba(125,125,125,0.4));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        /* Main Content */
-        main {
+        /* ========== GLASS BUTTON ========== */
+        .glass-btn {
             position: relative;
-            z-index: 10;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 60px;
-            padding-bottom: 80px;
-        }
-
-        section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 30px;
-            text-align: center;
-            color: var(--text-main);
-        }
-
-        /* Glass Container (reused style) */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: 
-                var(--card-shadow),
-                inset 0 1px 1px var(--highlight),
-                inset 0 10px 20px rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-            padding: 30px;
-            width: 100%;
-            max-width: 800px;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Video Embed */
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 */
-            height: 0;
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #000;
-        }
-
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-
-        /* Content Section */
-        .content-text {
-            text-align: center;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-
-        /* Links Section */
-        .links-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .liquid-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-main);
-            padding: 16px 24px;
-            border-radius: 100px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        body.light-mode .liquid-button {
-            background: rgba(255, 255, 255, 0.4);
-            border-color: rgba(0, 0, 0, 0.1);
-            color: var(--text-main);
-        }
-
-        .liquid-button:hover {
-            background: var(--text-main);
-            color: var(--bg-deep);
-            transform: scale(1.02);
-        }
-        
-        .liquid-button.primary {
-            font-size: 1.3rem;
-            padding: 20px 32px;
-            background: rgba(37, 211, 102, 0.2); /* WhatsApp greenish tint */
-            border-color: rgba(37, 211, 102, 0.4);
-        }
-        
-        .liquid-button.primary:hover {
-            background: #25D366;
-            color: white;
-        }
-
-        .liquid-button img.icon {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-        }
-
-        .app-store-btn {
-            display: flex;
-            align-items: center;
-            text-align: right; /* Text aligns to right since it's RTL */
-            gap: 15px;
-        }
-
-        .app-store-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-        }
-
-        .app-store-text {
-            display: flex;
-            flex-direction: column;
-            font-size: 0.9rem;
-            line-height: 1.2;
-        }
-        
-        .app-store-text small {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            font-weight: 400;
-        }
-
-        .small-desc {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-top: 10px;
-        }
-
-        /* Tools Table */
-        .tools-card {
-            padding: 24px;
-        }
-
-        .tools-table-wrapper {
-            width: 100%;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .tools-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .tools-table thead {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .tools-table th,
-        .tools-table td {
-            padding: 16px 18px;
-            text-align: right;
-            vertical-align: middle;
-        }
-
-        .tools-table th {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .tools-table td {
-            font-size: 1rem;
-            color: var(--text-secondary);
-        }
-
-        .tools-table tbody tr {
-            border-top: 1px solid var(--glass-border);
-            transition: background 0.2s ease;
-        }
-
-        .tools-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .tool-link {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            color: var(--text-main);
-            text-decoration: none;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
             font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .glass-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(255,255,255,0.05);
+            pointer-events: none;
+        }
+        .glass-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-strong);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .glass-btn:active { transform: scale(0.97); }
+
+        .glass-btn.primary {
+            background: rgba(99,102,241,0.2);
+            border-color: rgba(99,102,241,0.3);
+        }
+        .glass-btn.primary:hover {
+            background: rgba(99,102,241,0.35);
+            box-shadow: 0 0 30px var(--accent-glow);
         }
 
-        .tool-link:hover {
-            color: var(--accent);
+        .glass-btn.whatsapp {
+            background: rgba(37,211,102,0.15);
+            border-color: rgba(37,211,102,0.3);
+        }
+        .glass-btn.whatsapp:hover {
+            background: rgba(37,211,102,0.3);
+            box-shadow: 0 0 30px rgba(37,211,102,0.2);
         }
 
-        .tool-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px;
-            object-fit: contain;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+        .glass-btn.small {
+            padding: 8px 16px;
+            font-size: 0.85rem;
         }
 
-        @media (max-width: 720px) {
-            .tools-table thead {
-                display: none;
-            }
-
-            .tools-table,
-            .tools-table tbody,
-            .tools-table tr,
-            .tools-table td {
-                display: block;
-                width: 100%;
-            }
-
-            .tools-table tr {
-                padding: 12px 0;
-            }
-
-            .tools-table td {
-                padding: 8px 16px;
-            }
-
-            .tools-table td::before {
-                content: attr(data-label);
-                display: block;
-                font-size: 0.85rem;
-                color: var(--text-secondary);
-                margin-bottom: 4px;
-            }
-        }
-
-        /* Creators Section */
-        .creator-card {
+        /* ========== TOP BAR ========== */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            height: var(--top-height);
             display: flex;
             align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: rgba(5,5,8,0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.4s;
+        }
+        body.light #top-bar { background: rgba(240,242,245,0.7); }
+
+        .top-right { display: flex; align-items: center; gap: 8px; }
+        .top-left { display: flex; align-items: center; gap: 8px; }
+
+        .top-greeting {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .creator-photo {
-            width: 160px;
-            height: 160px;
-            border-radius: 24px;
-            object-fit: cover;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--card-shadow);
-            background: rgba(255, 255, 255, 0.05);
+        .top-logo {
+            height: 28px;
+            filter: invert(1);
+            transition: filter 0.4s;
         }
+        body.light .top-logo { filter: invert(0); }
 
-        .creator-info {
-            flex: 1;
-            min-width: 220px;
-        }
-
-        .creator-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .creator-desc {
+        .avatar-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--border-strong);
+            background: var(--surface);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
             font-size: 1rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
+        }
+        .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-btn:hover { border-color: var(--accent); transform: scale(1.05); }
+
+        /* Theme toggle */
+        .theme-toggle { display: flex; align-items: center; gap: 6px; }
+        .theme-toggle svg { width: 16px; height: 16px; color: var(--text-muted); transition: all 0.3s; }
+        .theme-switch {
+            width: 36px; height: 20px; border-radius: 10px;
+            background: var(--surface); border: 1px solid var(--border);
+            cursor: pointer; position: relative; transition: all 0.3s;
+        }
+        .theme-switch::after {
+            content: ''; position: absolute;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--text); top: 1px; right: 1px; transition: all 0.3s;
+        }
+        body.light .theme-switch::after { right: auto; left: 1px; }
+
+        /* ========== CONTENT AREA ========== */
+        #content {
+            position: relative;
+            z-index: 10;
+            padding-top: calc(var(--top-height) + 12px);
+            padding-bottom: calc(var(--nav-height) + 20px);
+            min-height: 100vh;
         }
 
-        .tiny-link {
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            border-bottom: 1px dashed transparent;
+        .page {
+            display: none;
+            padding: 0 16px;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeIn 0.3s ease;
+        }
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .tiny-link:hover {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
+        /* ========== BOTTOM NAV ========== */
+        #bottom-nav {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            background: rgba(20,20,30,0.7);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        body.light #bottom-nav {
+            background: rgba(255,255,255,0.7);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.5);
         }
 
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 8px 20px; border-radius: 16px; cursor: pointer;
+            color: var(--text-muted); font-size: 0.7rem; font-weight: 600;
+            transition: all 0.3s ease; position: relative;
+            background: transparent; border: none; font-family: inherit;
+        }
+        .nav-item svg { width: 22px; height: 22px; transition: all 0.3s; }
+        .nav-item.active { color: var(--text); background: rgba(255,255,255,0.08); }
+        body.light .nav-item.active { background: rgba(0,0,0,0.05); }
+        .nav-item.active svg { transform: scale(1.1); }
+
+        .nav-item.create-btn {
+            background: rgba(99,102,241,0.2);
+            border: 1px solid rgba(99,102,241,0.3);
+            color: var(--accent); padding: 8px 24px;
+        }
+        .nav-item.create-btn:hover { background: rgba(99,102,241,0.35); box-shadow: 0 0 20px var(--accent-glow); }
+
+        /* ========== SECTIONS ========== */
+        .section-title {
+            font-size: 1.5rem; font-weight: 800;
+            margin: 28px 0 16px; color: var(--text);
+        }
+        .section-title:first-child { margin-top: 8px; }
+
+        /* ========== SUB TABS ========== */
+        .sub-tabs {
+            display: flex; gap: 6px; margin-bottom: 16px;
+            overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .sub-tabs::-webkit-scrollbar { display: none; }
+        .sub-tab {
+            padding: 8px 18px; border-radius: var(--radius-full);
+            font-size: 0.85rem; font-weight: 600;
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text-dim); cursor: pointer;
+            white-space: nowrap; transition: all 0.3s; font-family: inherit;
+        }
+        .sub-tab.active {
+            background: rgba(99,102,241,0.2);
+            border-color: rgba(99,102,241,0.3);
+            color: var(--text);
+        }
+
+        /* ========== SEARCH ========== */
+        .search-box {
+            width: 100%; padding: 12px 18px;
+            background: var(--surface); backdrop-filter: blur(12px);
+            border: 1px solid var(--border); border-radius: var(--radius-full);
+            color: var(--text); font-family: inherit; font-size: 0.95rem;
+            outline: none; margin-bottom: 16px; transition: all 0.3s;
+        }
+        .search-box::placeholder { color: var(--text-muted); }
+        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+
+        /* ========== APP CARD ========== */
+        .app-card {
+            padding: 16px; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 14px;
+            cursor: pointer; text-decoration: none; color: var(--text);
+        }
+        .app-card:hover { transform: translateY(-2px); }
+        .app-icon {
+            width: 50px; height: 50px; border-radius: 14px;
+            background: var(--surface-hover); border: 1px solid var(--border);
+            overflow: hidden; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .app-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .app-info { flex: 1; min-width: 0; }
+        .app-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+        .app-desc {
+            font-size: 0.85rem; color: var(--text-dim);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .app-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+        .app-badge {
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
+            background: rgba(99,102,241,0.15); color: var(--accent);
+            font-weight: 600; display: inline-block;
+        }
+
+        /* ========== PROMPT CARD ========== */
+        .prompt-card {
+            padding: 16px; margin-bottom: 12px; cursor: pointer;
+        }
+        .prompt-card:hover { transform: translateY(-2px); }
+        .prompt-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+        .prompt-preview {
+            font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .show-more-btn {
+            display: block; width: 100%; padding: 12px;
+            text-align: center; font-size: 0.9rem; font-weight: 600;
+            color: var(--accent); cursor: pointer;
+            border-radius: var(--radius); transition: all 0.3s;
+            background: transparent; border: 1px dashed var(--border); font-family: inherit;
+        }
+        .show-more-btn:hover { background: var(--surface); border-style: solid; }
+
+        /* ========== GUIDE CARD ========== */
+        .guide-card { padding: 20px; margin-bottom: 12px; }
+        .guide-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+        .pdf-frame {
+            width: 100%; height: 400px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); background: rgba(0,0,0,0.3); overflow: hidden;
+        }
+        .pdf-frame iframe { width: 100%; height: 100%; border: none; }
+
+        /* ========== TOOLS ========== */
+        .tools-grid { display: flex; flex-direction: column; gap: 8px; }
+        .tool-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: var(--radius-sm);
+            background: var(--surface); border: 1px solid var(--border);
+            text-decoration: none; color: var(--text); transition: all 0.3s;
+        }
+        .tool-row:hover { background: var(--surface-hover); transform: translateX(-4px); }
+        .tool-favicon { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
+        .tool-name { font-weight: 600; font-size: 0.9rem; flex: 1; }
+        .tool-desc { font-size: 0.8rem; color: var(--text-dim); max-width: 50%; text-align: left; }
+
+        /* ========== CREATOR CARD ========== */
+        .creator-card {
+            padding: 20px; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .creator-photo {
+            width: 80px; height: 80px; border-radius: 20px;
+            object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .creator-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+        .creator-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; }
+        .creator-link {
+            display: inline-block; margin-top: 6px;
+            font-size: 0.8rem; color: var(--accent); text-decoration: none;
+        }
+
+        /* ========== NEWS CARD ========== */
+        .news-card {
+            padding: 16px; margin-bottom: 12px;
+            cursor: pointer; text-decoration: none; color: var(--text); display: block;
+        }
+        .news-card:hover { transform: translateY(-2px); }
+        .news-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
+        .news-source { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+        .news-desc {
+            font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        /* ========== MODALS ========== */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            align-items: flex-end; justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal-content {
+            width: 100%; max-width: 500px; max-height: 85vh;
+            overflow-y: auto; padding: 24px; padding-bottom: 40px;
+            border-radius: 24px 24px 0 0;
+            background: rgba(20,20,30,0.95);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border); border-bottom: none;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        body.light .modal-content { background: rgba(255,255,255,0.95); }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px; height: 4px; background: var(--text-muted);
+            border-radius: 2px; margin: 0 auto 20px;
+        }
+        .modal-title {
+            font-size: 1.3rem; font-weight: 800;
+            margin-bottom: 20px; text-align: center;
+        }
+
+        /* ========== FORMS ========== */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-dim); margin-bottom: 6px;
+        }
+        .form-input {
+            width: 100%; padding: 12px 16px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            font-family: inherit; font-size: 0.95rem;
+            outline: none; transition: all 0.3s;
+        }
+        .form-input:focus { border-color: var(--accent); }
+        textarea.form-input { min-height: 120px; resize: vertical; }
+
+        /* ========== POST MANAGEMENT ========== */
+        .post-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px; border-radius: var(--radius-sm);
+            background: var(--surface); border: 1px solid var(--border); margin-bottom: 8px;
+        }
+        .post-item-title { font-weight: 600; font-size: 0.9rem; flex: 1; }
+        .post-actions { display: flex; gap: 6px; }
+        .post-action-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--text-dim); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; font-size: 0.85rem;
+        }
+        .post-action-btn:hover { background: var(--surface-hover); }
+        .post-action-btn.delete:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+        /* ========== CREATE OPTIONS ========== */
+        .create-options { display: flex; flex-direction: column; gap: 12px; }
+        .create-option {
+            display: flex; align-items: center; gap: 16px; padding: 20px;
+            border-radius: var(--radius); background: var(--surface);
+            border: 1px solid var(--border); cursor: pointer; transition: all 0.3s;
+            color: var(--text); font-family: inherit; font-size: 1rem;
+            font-weight: 600; text-align: right;
+        }
+        .create-option:hover { background: var(--surface-hover); transform: translateY(-2px); }
+        .create-option-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 1.4rem;
+        }
+
+        /* ========== GOOGLE BTN ========== */
+        .google-btn {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 100%; padding: 14px; border-radius: var(--radius-full);
+            background: white; color: #333; font-family: inherit;
+            font-size: 1rem; font-weight: 600; border: none; cursor: pointer;
+            transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .google-btn svg { width: 20px; height: 20px; }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty-state-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .empty-state-text { font-size: 0.95rem; line-height: 1.6; }
+
+        /* ========== SPINNER ========== */
+        .spinner {
+            width: 24px; height: 24px; border: 2px solid var(--border);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
+
+        @media (min-width: 768px) {
+            .page { max-width: 640px; }
+            .nav-item { padding: 8px 28px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="orb-container">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
+    <!-- Shader Background -->
+    <div id="shader-bg"></div>
+
+    <!-- Top Bar -->
+    <div id="top-bar">
+        <div class="top-right">
+            <img src="vibekids logo.svg" alt="VibeKids" class="top-logo">
+        </div>
+        <div class="top-left">
+            <span class="top-greeting" id="topGreeting"></span>
+            <div class="theme-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <div class="theme-switch" id="themeSwitch"></div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </div>
+            <button class="avatar-btn" id="avatarBtn" onclick="handleAvatarClick()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+        </div>
     </div>
 
-    <header>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark/Light Mode">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-        </button>
+    <!-- Content -->
+    <div id="content">
 
-        <!-- Logo with invert filter logic in CSS -->
-        <img src="vibekids logo.svg" alt="VibeKids Logo" class="logo">
-        <div class="subtitle">הדור החדש של המתכנתים</div>
-    </header>
+        <!-- PAGE: COMMUNITY -->
+        <div class="page active" id="page-community">
 
-    <main>
-        <!-- Section 1: Guides -->
-        <section>
+            <!-- Apps -->
+            <h2 class="section-title">אפליקציות</h2>
+            <div class="sub-tabs" id="appsSubTabs">
+                <button class="sub-tab active" data-tab="new">חדש</button>
+                <button class="sub-tab" data-tab="random">אקראי</button>
+                <button class="sub-tab" data-tab="search">חיפוש</button>
+            </div>
+            <div id="appsSearchBox" style="display:none">
+                <input type="text" class="search-box" placeholder="חפש אפליקציה או יוצר..." id="appsSearchInput" oninput="handleAppSearch()">
+            </div>
+            <div id="appsList"><div class="spinner"></div></div>
+
+            <!-- Prompts -->
+            <h2 class="section-title">פרומפטים</h2>
+            <div id="promptsList"></div>
+            <button class="show-more-btn" id="showMorePrompts" onclick="loadMorePrompts()" style="display:none">הצג עוד</button>
+
+            <!-- Guides -->
             <h2 class="section-title">מדריכים</h2>
-            <div class="glass-card">
-                <div class="pdf-container" style="margin-top: 30px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 class="subtitle" style="font-size: 1.2rem; margin: 0;">מדריך - xcode-cursor</h3>
-                        <a href="Idea_To_App_AI_Speed.pdf" download class="liquid-button" style="padding: 8px 16px; font-size: 0.9rem;">
-                            הורד PDF
-                        </a>
-                    </div>
-                    <div style="position: relative; height: 500px; width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2);">
-                        <iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" width="100%" height="100%" style="border: none;">
-                            This browser does not support PDFs. Please download the PDF to view it: <a href="Idea_To_App_AI_Speed.pdf">Download PDF</a>.
-                        </iframe>
-                    </div>
+            <div class="guide-card glass">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <span class="guide-title" style="margin:0">מדריך Xcode + Cursor</span>
+                    <a href="Idea_To_App_AI_Speed.pdf" download class="glass-btn small">הורד PDF</a>
+                </div>
+                <div class="pdf-frame">
+                    <iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" loading="lazy"></iframe>
                 </div>
             </div>
-        </section>
 
-        <!-- Section 2: More Content -->
-        <section>
-            <div class="glass-card">
-                <p class="content-text">
-                    אתם יכולים לשלוח תוכן דרך אחת הקבוצות וכאשר יעבור אישור, נפרסם אותו ממש כאן
-                </p>
-            </div>
-        </section>
+            <!-- Tools -->
+            <h2 class="section-title">כלי וייב קודינג</h2>
+            <div class="tools-grid" id="toolsGrid"></div>
 
-        <!-- Section 3: Tools Table -->
-        <section>
-            <h2 class="section-title">כלי וייב קודינג פופולריים</h2>
-            <div class="glass-card tools-card">
-                <div class="tools-table-wrapper">
-                    <table class="tools-table" aria-label="כלים פופולריים לוייב קודינג">
-                        <thead>
-                            <tr>
-                                <th>אתר</th>
-                                <th>תיאור</th>
-                            </tr>
-                        </thead>
-                        <tbody id="toolsTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 3: Links -->
-        <section>
+            <!-- Links -->
             <h2 class="section-title">קישורים</h2>
-            <div class="links-container">
-                <!-- WhatsApp -->
-                <a href="https://chat.whatsapp.com/ISBH9r08Kpl0fp2NTL4kDT" target="_blank" class="liquid-button primary">
+            <div style="display:flex;flex-direction:column;gap:10px">
+                <a href="https://chat.whatsapp.com/ISBH9r08Kpl0fp2NTL4kDT" target="_blank" class="glass-btn whatsapp" style="width:100%;justify-content:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                     הצטרפו לקבוצה בווטסאפ
-                    <!-- Simple WhatsApp Icon SVG -->
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                 </a>
-                
-                <!-- Facebook -->
-                <a href="https://www.facebook.com/share/g/18DEoUM5Q7/?mibextid=wwXIfr" target="_blank" class="liquid-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036c-2.148 0-2.971.956-2.971 3.035v.938h4.038l-1.443 3.665h-2.595v7.98c5.756-1.75 9.124-7.404 7.307-13.16-1.258-3.985-4.664-6.915-8.809-7.575V2.833c-6.209.692-10.824 6.002-10.824 12.35 0 3.736 1.637 7.07 4.181 9.374.963.854 2.112 1.492 3.392 1.851.304.085.66.084 1.006-.04.346-.124.646-.356.84-.666z"/></svg>
+                <a href="https://www.facebook.com/share/g/18DEoUM5Q7/?mibextid=wwXIfr" target="_blank" class="glass-btn" style="width:100%;justify-content:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     הצטרפו לקבוצה בפייסבוק
                 </a>
-
-                <!-- App Store -->
-                <a href="https://apps.apple.com/il/app/vibekids/id6756629285" target="_blank" class="liquid-button app-store-btn">
-                    <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/83/b8/36/83b836fb-f53e-86e6-129b-b02f9f226851/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg" alt="App Icon" class="app-store-icon">
-                    <div class="app-store-text">
-                        <small>הורד עכשיו ב-</small>
-                        App Store
-                    </div>
+                <a href="https://apps.apple.com/il/app/vibekids/id6756629285" target="_blank" class="glass-btn" style="width:100%;justify-content:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    הורדת האפליקציה
                 </a>
-                
-                <p class="small-desc">רשת חברתית חינמית לנו, חברי הקבוצה</p>
             </div>
-        </section>
 
-        <!-- Section 4: Creators -->
-        <section>
+            <!-- Creators -->
             <h2 class="section-title">יוצרי הקהילה</h2>
-            <div class="glass-card creator-card">
-                <img src="IMG_2973.png" alt="ליאור - מנהל הקהילה" class="creator-photo">
-                <div class="creator-info">
+            <div class="creator-card glass">
+                <img src="IMG_2973.png" alt="ליאור" class="creator-photo">
+                <div>
                     <div class="creator-name">ליאור</div>
                     <p class="creator-desc">בן 24 מרחובות, מאמין שהרובוטים כאן להשתלט על העולם</p>
-                    <a class="tiny-link" href="https://www.youtube.com/@vibekidsone" target="_blank" rel="noopener noreferrer">
-                        ערוץ היוטיוב
-                    </a>
+                    <a class="creator-link" href="https://www.youtube.com/@vibekidsone" target="_blank">ערוץ היוטיוב &larr;</a>
                 </div>
             </div>
-        </section>
-    </main>
+            <div style="height:20px"></div>
+        </div>
+
+        <!-- PAGE: CREATE (shown via modal) -->
+        <div class="page" id="page-create"></div>
+
+        <!-- PAGE: WORLD -->
+        <div class="page" id="page-world">
+            <h2 class="section-title">חדשות מהעולם</h2>
+            <div id="newsList"><div class="spinner"></div></div>
+
+            <h2 class="section-title">כלי וייב קודינג</h2>
+            <div class="tools-grid" id="worldToolsGrid"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav id="bottom-nav">
+        <button class="nav-item active" data-page="community" onclick="switchPage('community')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>מהקהילה</span>
+        </button>
+        <button class="nav-item create-btn" onclick="openCreateModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>העלה</span>
+        </button>
+        <button class="nav-item" data-page="world" onclick="switchPage('world')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span>מהעולם</span>
+        </button>
+    </nav>
+
+    <!-- MODAL: Auth -->
+    <div class="modal-overlay" id="modalAuth">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div class="modal-title">התחברות</div>
+            <p style="text-align:center;color:var(--text-dim);margin-bottom:24px;font-size:0.95rem">
+                התחבר כדי לשתף אפליקציות ופרומפטים עם הקהילה
+            </p>
+            <button class="google-btn" onclick="signInWithGoogle()">
+                <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                התחבר עם Google
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: Profile -->
+    <div class="modal-overlay" id="modalProfile">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div class="modal-title">הפרופיל שלי</div>
+            <div class="form-group">
+                <label class="form-label">שם תצוגה</label>
+                <input type="text" class="form-input" id="profileDisplayName" placeholder="השם שלך">
+            </div>
+            <div class="form-group">
+                <label class="form-label">שם משתמש</label>
+                <input type="text" class="form-input" id="profileUsername" placeholder="username" dir="ltr">
+            </div>
+            <button class="glass-btn primary" style="width:100%;margin-bottom:24px" onclick="saveProfile()">שמור שינויים</button>
+
+            <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:12px">הפוסטים שלי</h3>
+            <div id="myPostsList"><div class="empty-state"><div class="empty-state-text">אין פוסטים עדיין</div></div></div>
+
+            <button class="glass-btn" style="width:100%;margin-top:20px;color:#ef4444;border-color:rgba(239,68,68,0.3)" onclick="signOut()">התנתק</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Prompt Detail -->
+    <div class="modal-overlay" id="modalPrompt">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div class="modal-title" id="promptModalTitle"></div>
+            <div id="promptModalContent" style="white-space:pre-wrap;color:var(--text-dim);line-height:1.7;font-size:0.95rem;direction:ltr;text-align:left"></div>
+            <button class="glass-btn" style="width:100%;margin-top:20px" onclick="copyPrompt()">העתק פרומפט</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Create Options -->
+    <div class="modal-overlay" id="modalCreate">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div class="modal-title">מה תרצה לשתף?</div>
+            <div class="create-options">
+                <button class="create-option" onclick="openCreateForm('app')">
+                    <div class="create-option-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                    </div>
+                    <div>
+                        <div>קישור לאפליקציה</div>
+                        <div style="font-size:0.8rem;font-weight:400;color:var(--text-dim)">שתף אפליקציה שבנית</div>
+                    </div>
+                </button>
+                <button class="create-option" onclick="openCreateForm('prompt')">
+                    <div class="create-option-icon" style="background:rgba(168,85,247,0.15);color:#a855f7">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <div>פרומפט</div>
+                        <div style="font-size:0.8rem;font-weight:400;color:var(--text-dim)">שתף פרומפט שעבד לך</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Create Form -->
+    <div class="modal-overlay" id="modalCreateForm">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div class="modal-title" id="createFormTitle"></div>
+            <div id="createFormFields"></div>
+            <button class="glass-btn primary" style="width:100%" id="createFormSubmit" onclick="submitCreate()">פרסם</button>
+        </div>
+    </div>
 
     <script>
-        // Light/Dark Mode Toggle
-        const toggleBtn = document.getElementById('themeToggle');
-        const body = document.body;
+    // ==========================================
+    // CONFIG
+    // ==========================================
+    const SUPABASE_URL = 'https://ziaefmhricdsojfpexca.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppYWVmbWhyaWNkc29qZnBleGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4OTkzOTcsImV4cCI6MjA4MTQ3NTM5N30.1wuUxB6ttiYLkAZSpohbb5OXvlAu1BzbNJ6-gWhz1zo';
 
-        // Check for saved preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            body.className = savedTheme;
+    // ==========================================
+    // STATE
+    // ==========================================
+    let currentUser = null;
+    let userProfile = null;  // from profiles table
+    let currentPage = 'community';
+    let appsData = [];
+    let promptsData = [];
+    let promptsLimit = 4;
+    let createType = '';
+
+    // ==========================================
+    // SUPABASE
+    // ==========================================
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ==========================================
+    // GREETINGS
+    // ==========================================
+    const greetings = [
+        'רק וייבים טובים, {name}',
+        'מה נבנה היום, {name}?',
+        'הקוד זורם, {name}',
+        'בוא נעשה קסם, {name}',
+        'Vibe coding time, {name}',
+        'הדור החדש, {name}',
+        'היי {name}, מוכן ליצור?',
+        'Let\'s vibe, {name}',
+    ];
+    const defaultGreetings = [
+        'הדור החדש של המתכנתים',
+        'Vibe Coding Starts Here',
+        'בנה. שתף. התחבר.',
+    ];
+
+    function getGreeting(name) {
+        if (name) {
+            const g = greetings[Math.floor(Math.random() * greetings.length)];
+            return g.replace('{name}', name);
+        }
+        return defaultGreetings[Math.floor(Math.random() * defaultGreetings.length)];
+    }
+
+    // ==========================================
+    // TOOLS DATA (static)
+    // ==========================================
+    const tools = [
+        { name: 'Lovable', url: 'https://lovable.dev/', desc: 'פופולרי, פשוט' },
+        { name: 'Base44', url: 'https://base44.com/', desc: 'מיזם ישראלי פופולרי' },
+        { name: 'V0', url: 'https://v0.app/', desc: 'מבית Vercel' },
+        { name: 'Bolt.new', url: 'https://bolt.new/', desc: 'מריץ Node.js וטרמינל' },
+        { name: 'Replit', url: 'https://replit.com/', desc: 'למתחילים ולמנוסים' },
+        { name: 'Google AI Studio', url: 'https://aistudio.google.com/apps', desc: 'מבית גוגל' },
+        { name: 'GitHub Copilot', url: 'https://github.com/copilot', desc: 'מבית GitHub' },
+        { name: 'Cursor', url: 'https://cursor.com/', desc: 'פופולרי (למחשב)' },
+        { name: 'Antigravity', url: 'https://antigravity.google/', desc: 'מאת גוגל' },
+        { name: 'Codex', url: 'https://openai.com/codex/', desc: 'מאת OpenAI' },
+        { name: 'Gemini CLI', url: 'https://geminicli.com/', desc: 'בטרמינל' },
+        { name: 'Claude Code', url: 'https://claude.com/product/claude-code', desc: 'פופולרי, יכולות מרשימות' },
+    ];
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        initShader();
+        initTheme();
+        renderTools('toolsGrid');
+        renderTools('worldToolsGrid');
+        initSubTabs();
+
+        // Check session
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+            currentUser = session.user;
+            await loadProfile();
         }
 
-        toggleBtn.addEventListener('click', () => {
-            if (body.classList.contains('light-mode')) {
-                body.classList.remove('light-mode');
-                localStorage.setItem('theme', '');
-            } else {
-                body.classList.add('light-mode');
-                localStorage.setItem('theme', 'light-mode');
+        // Auth state listener
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                currentUser = session.user;
+                await loadProfile();
+                closeAllModals();
             }
+            if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                userProfile = null;
+            }
+            updateUI();
         });
 
-        const tools = [
-            {
-                name: 'Lovable',
-                url: 'https://lovable.dev/',
-                description: 'פופלרי, פשוט'
-            },
-            {
-                name: 'Base44',
-                url: 'https://base44.com/',
-                description: 'פופלרי בישראל, מיזם ישראלי'
-            },
-            {
-                name: 'V0',
-                url: 'https://v0.app/',
-                description: 'מבית אתר אחסון האתרים vercel'
-            },
-            {
-                name: 'Bolt.new',
-                url: 'https://bolt.new/',
-                description: 'מריץ node.js וטרמינל'
-            },
-            {
-                name: 'replit',
-                url: 'https://replit.com/',
-                description: 'גם למתחילים ולמפתחים מנוסים'
-            },
-            {
-                name: 'Google AI Studio',
-                url: 'https://aistudio.google.com/apps',
-                description: 'מבית גוגל, עם תמיכה בשירותי גוגל כמו nano banana'
-            },
-            {
-                name: 'Github copilot',
-                url: 'https://github.com/copilot',
-                description: 'מבית גיטהאב'
-            },
-            {
-                name: 'Cursor',
-                url: 'https://cursor.com/',
-                description: 'פופלרי (הורדה למחשב)'
-            },
-            {
-                name: 'Antigravity',
-                url: 'https://antigravity.google/',
-                description: 'מאת גוגל, הורדה למחשב'
-            },
-            {
-                name: 'Codex',
-                url: 'https://openai.com/codex/',
-                description: 'מאת OpenAI'
-            },
-            {
-                name: 'gemini cli',
-                url: 'https://geminicli.com/',
-                description: 'בטרמינל של המחשב'
-            },
-            {
-                name: 'Claude code',
-                url: 'https://claude.com/product/claude-code',
-                description: 'בטרמינל של המחשב, פופלרי עם יכולות מרשימות'
-            }
-        ];
+        await Promise.all([loadApps(), loadPrompts()]);
+        updateUI();
+    });
 
-        const toolsTableBody = document.getElementById('toolsTableBody');
+    // ==========================================
+    // THEME
+    // ==========================================
+    function initTheme() {
+        if (localStorage.getItem('vk-theme') === 'light') document.body.classList.add('light');
+        document.getElementById('themeSwitch').addEventListener('click', () => {
+            document.body.classList.toggle('light');
+            localStorage.setItem('vk-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+        });
+    }
 
-        const placeholderIcon = encodeURIComponent(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">' +
-            '<rect width="64" height="64" rx="12" fill="rgba(255,255,255,0.2)"/>' +
-            '<path d="M20 34h24" stroke="rgba(255,255,255,0.7)" stroke-width="4" stroke-linecap="round"/>' +
-            '</svg>'
-        );
+    // ==========================================
+    // THREE.JS SHADER
+    // ==========================================
+    function initShader() {
+        const container = document.getElementById('shader-bg');
+        if (!container || typeof THREE === 'undefined') return;
 
-        const getFaviconServiceUrl = (domain) =>
-            `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-
-        const setFavicon = (img) => {
-            const domain = img.dataset.domain;
-            if (!domain) return;
-            img.src = getFaviconServiceUrl(domain);
-        };
-
-        if (toolsTableBody) {
-            tools.forEach((tool) => {
-                const row = document.createElement('tr');
-
-                const siteCell = document.createElement('td');
-                siteCell.setAttribute('data-label', 'אתר');
-
-                const link = document.createElement('a');
-                link.href = tool.url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.className = 'tool-link';
-
-                const icon = document.createElement('img');
-                icon.className = 'tool-icon';
-                icon.alt = `${tool.name} favicon`;
-                icon.src = `data:image/svg+xml;utf8,${placeholderIcon}`;
-
-                const hostname = new URL(tool.url).hostname;
-                icon.dataset.domain = hostname;
-                icon.dataset.fallback = `https://${hostname}/favicon.ico`;
-            icon.onerror = () => {
-                const fallback = icon.dataset.fallback;
-                if (fallback && icon.src !== fallback) {
-                    icon.src = fallback;
+        const vertexShader = `void main() { gl_Position = vec4(position, 1.0); }`;
+        const fragmentShader = `
+            precision highp float;
+            uniform vec2 resolution;
+            uniform float time;
+            mat2 rotate2d(float a){ return mat2(cos(a),-sin(a),sin(a),cos(a)); }
+            float random(vec2 st){ return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123); }
+            void main(void) {
+                vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+                float t = time * 0.1;
+                uv += vec2(sin(uv.y*4.0+t*2.0), cos(uv.x*4.0+t*2.0)) * 0.1;
+                uv = rotate2d(t*0.25) * uv;
+                float intensity = 0.0;
+                for(int i=0; i<7; i++){
+                    float w = sin(t*2.0+float(i)*0.5)*0.5+0.5;
+                    intensity += 0.02 / abs(w - length(uv) + sin(uv.x+uv.y)*0.1);
                 }
-            };
+                vec3 c1 = vec3(0.0,0.5,1.0);
+                vec3 c2 = vec3(1.0,0.2,0.5);
+                vec3 col = mix(c1,c2,sin(length(uv)*2.0-t)*0.5+0.5) * intensity;
+                col += (random(uv+t)-0.5)*0.08;
+                gl_FragColor = vec4(col,1.0);
+            }
+        `;
 
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = tool.name;
+        const camera = new THREE.Camera();
+        camera.position.z = 1;
+        const scene = new THREE.Scene();
+        const geo = new THREE.PlaneGeometry(2, 2);
+        const uniforms = { time: { value: 1.0 }, resolution: { value: new THREE.Vector2() } };
+        const mat = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+        scene.add(new THREE.Mesh(geo, mat));
 
-                link.append(icon, nameSpan);
-                siteCell.appendChild(link);
+        const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
 
-                const descCell = document.createElement('td');
-                descCell.setAttribute('data-label', 'תיאור');
-                descCell.textContent = tool.description;
-
-                row.append(siteCell, descCell);
-                toolsTableBody.appendChild(row);
-            });
-
-            const iconImages = toolsTableBody.querySelectorAll('.tool-icon');
-            iconImages.forEach((img) => {
-                setFavicon(img);
-            });
+        function resize() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            uniforms.resolution.value.set(renderer.domElement.width, renderer.domElement.height);
         }
+        resize();
+        window.addEventListener('resize', resize);
+
+        (function animate() {
+            requestAnimationFrame(animate);
+            uniforms.time.value += 0.05;
+            renderer.render(scene, camera);
+        })();
+    }
+
+    // ==========================================
+    // NAVIGATION
+    // ==========================================
+    function switchPage(page) {
+        currentPage = page;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page)?.classList.add('active');
+        document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+        document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+
+        if (page === 'world' && document.querySelector('#newsList .spinner')) loadNews();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==========================================
+    // SUB TABS
+    // ==========================================
+    function initSubTabs() {
+        document.querySelectorAll('#appsSubTabs .sub-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('#appsSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const type = tab.dataset.tab;
+                document.getElementById('appsSearchBox').style.display = type === 'search' ? 'block' : 'none';
+                if (type === 'new') renderApps(appsData);
+                else if (type === 'random') renderApps(shuffle([...appsData]));
+                else { document.getElementById('appsSearchInput').focus(); handleAppSearch(); }
+            });
+        });
+    }
+
+    function handleAppSearch() {
+        const q = document.getElementById('appsSearchInput').value.trim().toLowerCase();
+        if (!q) return renderApps(appsData);
+        renderApps(appsData.filter(a =>
+            a.name.toLowerCase().includes(q) ||
+            (a.description || '').toLowerCase().includes(q) ||
+            (a.creator_name || '').toLowerCase().includes(q)
+        ));
+    }
+
+    // ==========================================
+    // APPS (from Supabase apps table)
+    // ==========================================
+    async function loadApps() {
+        try {
+            const { data, error } = await sb
+                .from('apps')
+                .select('*, profiles(display_name, username)')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            appsData = (data || []).map(a => ({
+                ...a,
+                creator_name: a.profiles?.display_name || a.profiles?.username || ''
+            }));
+        } catch (e) {
+            console.warn('Apps load error:', e);
+            appsData = [];
+        }
+        renderApps(appsData);
+    }
+
+    function renderApps(apps) {
+        const el = document.getElementById('appsList');
+        if (!apps.length) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📱</div><div class="empty-state-text">עדיין אין אפליקציות.<br>היה הראשון לשתף!</div></div>`;
+            return;
+        }
+        el.innerHTML = apps.map(a => {
+            const url = a.website_url || a.app_store_url || a.play_store_url || '#';
+            const domain = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
+            return `
+            <a href="${esc(url)}" target="_blank" rel="noopener" class="app-card glass" style="text-decoration:none;color:var(--text)">
+                <div class="app-icon">
+                    ${a.icon_url
+                        ? `<img src="${esc(a.icon_url)}" alt="" onerror="this.style.display='none'">`
+                        : domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="" onerror="this.style.display='none'">` : '📱'
+                    }
+                </div>
+                <div class="app-info">
+                    <div class="app-name">${esc(a.name)} ${a.status ? `<span class="app-badge">${esc(a.status)}</span>` : ''}</div>
+                    <div class="app-desc">${esc(a.description || '')}</div>
+                    ${a.creator_name ? `<div class="app-meta">מאת ${esc(a.creator_name)}</div>` : ''}
+                </div>
+            </a>`;
+        }).join('');
+    }
+
+    // ==========================================
+    // PROMPTS (from Supabase prompts table)
+    // ==========================================
+    async function loadPrompts() {
+        try {
+            const { data, error } = await sb
+                .from('prompts')
+                .select('*, profiles(display_name)')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            promptsData = data || [];
+        } catch (e) {
+            console.warn('Prompts load error:', e);
+            promptsData = [];
+        }
+        renderPrompts(promptsData.slice(0, promptsLimit));
+        document.getElementById('showMorePrompts').style.display = promptsData.length > promptsLimit ? 'block' : 'none';
+    }
+
+    function renderPrompts(prompts) {
+        const el = document.getElementById('promptsList');
+        if (!promptsData.length) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💡</div><div class="empty-state-text">עדיין אין פרומפטים.<br>שתף פרומפט שעבד לך!</div></div>`;
+            return;
+        }
+        el.innerHTML = prompts.map((p, i) => `
+            <div class="prompt-card glass" onclick="openPromptModal(${i})">
+                <div class="prompt-title">${esc(p.title)}</div>
+                <div class="prompt-preview">${esc(p.content)}</div>
+            </div>
+        `).join('');
+    }
+
+    function loadMorePrompts() {
+        promptsLimit += 8;
+        renderPrompts(promptsData.slice(0, promptsLimit));
+        document.getElementById('showMorePrompts').style.display = promptsData.length > promptsLimit ? 'block' : 'none';
+    }
+
+    function openPromptModal(i) {
+        const p = promptsData[i];
+        if (!p) return;
+        document.getElementById('promptModalTitle').textContent = p.title;
+        document.getElementById('promptModalContent').textContent = p.content;
+        openModal('modalPrompt');
+    }
+
+    function copyPrompt() {
+        navigator.clipboard.writeText(document.getElementById('promptModalContent').textContent).then(() => {
+            const btn = document.querySelector('#modalPrompt .glass-btn');
+            btn.textContent = 'הועתק!';
+            setTimeout(() => btn.textContent = 'העתק פרומפט', 1500);
+        });
+    }
+
+    // ==========================================
+    // NEWS (RSS)
+    // ==========================================
+    async function loadNews() {
+        const el = document.getElementById('newsList');
+        const feeds = [
+            'https://techcrunch.com/feed/',
+            'https://www.theverge.com/rss/index.xml',
+        ];
+        try {
+            const results = [];
+            for (const feedUrl of feeds) {
+                try {
+                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=6`);
+                    const data = await res.json();
+                    if (data.items) results.push(...data.items.map(item => ({
+                        title: item.title,
+                        link: item.link,
+                        desc: (item.description || '').replace(/<[^>]*>/g, '').slice(0, 150),
+                        source: data.feed?.title || '',
+                        date: item.pubDate,
+                    })));
+                } catch {}
+            }
+            results.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (!results.length) {
+                el.innerHTML = '<div class="empty-state"><div class="empty-state-text">לא הצלחנו לטעון חדשות</div></div>';
+                return;
+            }
+            el.innerHTML = results.slice(0, 12).map(n => `
+                <a href="${esc(n.link)}" target="_blank" rel="noopener" class="news-card glass">
+                    <div class="news-source">${esc(n.source)}</div>
+                    <div class="news-title">${esc(n.title)}</div>
+                    <div class="news-desc">${esc(n.desc)}</div>
+                </a>
+            `).join('');
+        } catch {
+            el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת חדשות</div></div>';
+        }
+    }
+
+    // ==========================================
+    // TOOLS RENDER
+    // ==========================================
+    function renderTools(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = tools.map(t => {
+            const domain = new URL(t.url).hostname;
+            return `<a href="${esc(t.url)}" target="_blank" rel="noopener" class="tool-row">
+                <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="" class="tool-favicon" onerror="this.style.display='none'">
+                <span class="tool-name">${esc(t.name)}</span>
+                <span class="tool-desc">${esc(t.desc)}</span>
+            </a>`;
+        }).join('');
+    }
+
+    // ==========================================
+    // AUTH
+    // ==========================================
+    async function signInWithGoogle() {
+        const { error } = await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + window.location.pathname }
+        });
+        if (error) alert('שגיאה: ' + error.message);
+    }
+
+    async function signOut() {
+        await sb.auth.signOut();
+        currentUser = null;
+        userProfile = null;
+        closeAllModals();
+        updateUI();
+    }
+
+    async function loadProfile() {
+        if (!currentUser) return;
+        try {
+            // Find profile by user_id (auth uid)
+            const { data } = await sb.from('profiles').select('*').eq('user_id', currentUser.id).single();
+            userProfile = data;
+        } catch (e) {
+            console.warn('Profile load error:', e);
+            // Profile might not exist yet - will be created by trigger or manually
+        }
+    }
+
+    async function saveProfile() {
+        if (!currentUser || !userProfile) return;
+        const displayName = document.getElementById('profileDisplayName').value.trim();
+        const username = document.getElementById('profileUsername').value.trim();
+
+        const { error } = await sb.from('profiles').update({
+            display_name: displayName,
+            username: username,
+        }).eq('id', userProfile.id);
+
+        if (error) { alert('שגיאה: ' + error.message); return; }
+        userProfile = { ...userProfile, display_name: displayName, username };
+        updateUI();
+        alert('נשמר!');
+    }
+
+    function handleAvatarClick() {
+        if (currentUser && userProfile) {
+            document.getElementById('profileDisplayName').value = userProfile.display_name || '';
+            document.getElementById('profileUsername').value = userProfile.username || '';
+            loadMyPosts();
+            openModal('modalProfile');
+        } else {
+            openModal('modalAuth');
+        }
+    }
+
+    async function loadMyPosts() {
+        if (!userProfile) return;
+        const el = document.getElementById('myPostsList');
+        try {
+            const [appsRes, promptsRes] = await Promise.all([
+                sb.from('apps').select('id, name').eq('profile_id', userProfile.id).order('created_at', { ascending: false }),
+                sb.from('prompts').select('id, title').eq('profile_id', userProfile.id).order('created_at', { ascending: false }),
+            ]);
+            const items = [
+                ...(appsRes.data || []).map(a => ({ id: a.id, title: a.name, type: 'app' })),
+                ...(promptsRes.data || []).map(p => ({ id: p.id, title: p.title, type: 'prompt' })),
+            ];
+            if (!items.length) {
+                el.innerHTML = '<div class="empty-state"><div class="empty-state-text">אין פוסטים עדיין</div></div>';
+                return;
+            }
+            el.innerHTML = items.map(item => `
+                <div class="post-item">
+                    <span class="post-item-title">${item.type === 'app' ? '📱' : '💡'} ${esc(item.title)}</span>
+                    <div class="post-actions">
+                        <button class="post-action-btn delete" onclick="deletePost('${item.type}','${item.id}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch {
+            el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינה</div></div>';
+        }
+    }
+
+    async function deletePost(type, id) {
+        if (!confirm('בטוח למחוק?')) return;
+        await sb.from(type === 'app' ? 'apps' : 'prompts').delete().eq('id', id);
+        loadMyPosts();
+        if (type === 'app') await loadApps();
+        else await loadPrompts();
+    }
+
+    // ==========================================
+    // CREATE
+    // ==========================================
+    function openCreateModal() {
+        if (!currentUser) { openModal('modalAuth'); return; }
+        openModal('modalCreate');
+    }
+
+    function openCreateForm(type) {
+        createType = type;
+        closeModal('modalCreate');
+        const titleEl = document.getElementById('createFormTitle');
+        const fieldsEl = document.getElementById('createFormFields');
+
+        if (type === 'app') {
+            titleEl.textContent = 'שתף אפליקציה';
+            fieldsEl.innerHTML = `
+                <div class="form-group"><label class="form-label">שם האפליקציה</label>
+                    <input type="text" class="form-input" id="createName" placeholder="למשל: VibeKids App"></div>
+                <div class="form-group"><label class="form-label">קישור לאתר</label>
+                    <input type="url" class="form-input" id="createUrl" placeholder="https://..." dir="ltr"></div>
+                <div class="form-group"><label class="form-label">תיאור קצר</label>
+                    <input type="text" class="form-input" id="createDesc" placeholder="במשפט אחד..."></div>
+            `;
+        } else {
+            titleEl.textContent = 'שתף פרומפט';
+            fieldsEl.innerHTML = `
+                <div class="form-group"><label class="form-label">כותרת</label>
+                    <input type="text" class="form-input" id="createName" placeholder="למשל: פרומפט לבניית לוגו"></div>
+                <div class="form-group"><label class="form-label">תוכן הפרומפט</label>
+                    <textarea class="form-input" id="createContent" placeholder="הדבק כאן את הפרומפט..." dir="ltr"></textarea></div>
+            `;
+        }
+        setTimeout(() => openModal('modalCreateForm'), 200);
+    }
+
+    async function submitCreate() {
+        if (!currentUser || !userProfile) return;
+        const name = document.getElementById('createName')?.value.trim();
+        if (!name) { alert('נא למלא שם/כותרת'); return; }
+
+        const btn = document.getElementById('createFormSubmit');
+        btn.textContent = 'מפרסם...';
+        btn.disabled = true;
+
+        try {
+            if (createType === 'app') {
+                const url = document.getElementById('createUrl')?.value.trim();
+                if (!url) { alert('נא למלא קישור'); btn.textContent = 'פרסם'; btn.disabled = false; return; }
+                const { error } = await sb.from('apps').insert({
+                    name,
+                    website_url: url,
+                    description: document.getElementById('createDesc')?.value.trim() || '',
+                    profile_id: userProfile.id,
+                });
+                if (error) throw error;
+            } else {
+                const content = document.getElementById('createContent')?.value.trim();
+                if (!content) { alert('נא למלא תוכן'); btn.textContent = 'פרסם'; btn.disabled = false; return; }
+                const { error } = await sb.from('prompts').insert({
+                    title: name,
+                    content,
+                    profile_id: userProfile.id,
+                });
+                if (error) throw error;
+            }
+            closeAllModals();
+            await Promise.all([loadApps(), loadPrompts()]);
+            switchPage('community');
+        } catch (e) {
+            alert('שגיאה: ' + e.message);
+        } finally {
+            btn.textContent = 'פרסם';
+            btn.disabled = false;
+        }
+    }
+
+    // ==========================================
+    // MODALS
+    // ==========================================
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', () => m.classList.remove('open'));
+    });
+
+    // ==========================================
+    // UI UPDATE
+    // ==========================================
+    function updateUI() {
+        const btn = document.getElementById('avatarBtn');
+        if (userProfile?.avatar_url) {
+            btn.innerHTML = `<img src="${esc(userProfile.avatar_url)}" alt="">`;
+        } else if (currentUser) {
+            btn.innerHTML = (userProfile?.display_name || 'U').charAt(0);
+        } else {
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        }
+        document.getElementById('topGreeting').textContent = getGreeting(userProfile?.display_name || '');
+    }
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
+    function esc(str) {
+        if (!str) return '';
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
     </script>
 </body>
 </html>
