@@ -96,13 +96,15 @@
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
         /* === BOTTOM NAV === */
-        #bottom-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:4px;padding:8px 12px;background:rgba(20,20,30,.7);backdrop-filter:blur(25px) saturate(180%);-webkit-backdrop-filter:blur(25px) saturate(180%);border:1px solid var(--border);border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08)}
-        body.light #bottom-nav{background:rgba(255,255,255,.7);box-shadow:0 8px 40px rgba(0,0,0,.1)}
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 20px;border-radius:16px;cursor:pointer;color:var(--text-muted);font-size:.7rem;font-weight:600;transition:all .3s;background:transparent;border:none;font-family:inherit}
-        .nav-item svg{width:22px;height:22px;transition:all .3s}
-        .nav-item.active{color:var(--text);background:rgba(255,255,255,.08)}
-        body.light .nav-item.active{background:rgba(0,0,0,.05)}
-        .nav-item.active svg{transform:scale(1.1)}
+        #bottom-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:2px;padding:6px;background:rgba(20,20,30,.75);backdrop-filter:blur(25px) saturate(180%);-webkit-backdrop-filter:blur(25px) saturate(180%);border:1px solid var(--border);border-radius:var(--radius-full);box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);height:52px}
+        body.light #bottom-nav{background:rgba(255,255,255,.75);box-shadow:0 8px 40px rgba(0,0,0,.1)}
+        .nav-item{display:flex;align-items:center;gap:0;padding:0 12px;height:40px;min-width:40px;border-radius:var(--radius-full);cursor:pointer;color:var(--text-muted);font-size:.75rem;font-weight:600;transition:all .35s cubic-bezier(.34,1.56,.64,1);background:transparent;border:none;font-family:inherit;overflow:hidden;white-space:nowrap}
+        .nav-item:active{transform:scale(.95)}
+        .nav-item svg{width:22px;height:22px;flex-shrink:0;transition:color .2s}
+        .nav-item .nav-label{display:inline-block;max-width:0;opacity:0;overflow:hidden;margin-right:0;transition:max-width .35s cubic-bezier(.34,1.56,.64,1),opacity .2s ease,margin-right .35s cubic-bezier(.34,1.56,.64,1)}
+        .nav-item.active{color:var(--accent);background:rgba(99,102,241,.12);gap:0}
+        body.light .nav-item.active{background:rgba(99,102,241,.1)}
+        .nav-item.active .nav-label{max-width:80px;opacity:1;margin-right:8px}
 
         /* === SECTIONS === */
         .section-title{font-size:1.5rem;font-weight:800;margin:28px 0 16px;color:var(--text)}
@@ -336,15 +338,15 @@
 <nav id="bottom-nav">
     <button class="nav-item active" data-page="community" onclick="switchPage('community')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span>מהקהילה</span>
+        <span class="nav-label">מהקהילה</span>
     </button>
     <button class="nav-item" onclick="openCreateModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>העלה</span>
+        <span class="nav-label">העלה</span>
     </button>
     <button class="nav-item" data-page="world" onclick="switchPage('world')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        <span>מהעולם</span>
+        <span class="nav-label">מהעולם</span>
     </button>
 </nav>
 
