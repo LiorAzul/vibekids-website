@@ -508,6 +508,7 @@ const tools = [
 
 // ====== HELPERS ======
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function safeUrl(url) { if (!url) return ''; try { const u = new URL(url); if (u.protocol === 'https:' || u.protocol === 'http:') return url; } catch {} return ''; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function getFavicon(url, size = 64) {
     if (!url) return '';
@@ -670,11 +671,13 @@ function renderApps(apps) {
         </div>`;
     }).join('');
 
-    // Async: resolve smart icons for App Store / Play Store links
+    // Async: resolve smart icons ONLY for App Store / Play Store links
     el.querySelectorAll('img[data-resolve-url]').forEach(async img => {
         const url = img.dataset.resolveUrl;
         if (!url) return;
         try {
+            const u = new URL(url);
+            if (!u.hostname.includes('apps.apple.com') && !u.hostname.includes('play.google.com')) return;
             const resolved = await resolveAppIcon(url);
             if (resolved && img.parentElement) {
                 img.style.display = '';
@@ -704,7 +707,7 @@ async function showAppDetail(appId) {
                 <img id="appDetailImg" src="${esc(fav)}" class="app-detail-icon" onerror="this.style.display='none'">
                 <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0 4px">${esc(a.name)}</h1>
                 ${a.description ? `<p style="color:var(--text-dim);margin:16px 0;line-height:1.6;font-size:.95rem">${esc(a.description)}</p>` : ''}
-                ${url ? `<a href="${esc(url)}" target="_blank" class="glass-btn primary" style="margin:16px auto;display:inline-flex">בקר באתר</a>` : ''}
+                ${safeUrl(url) ? `<a href="${esc(safeUrl(url))}" target="_blank" rel="noopener noreferrer" class="glass-btn primary" style="margin:16px auto;display:inline-flex">בקר באתר</a>` : ''}
             </div>
             ${p ? `<div class="glass" style="padding:14px;margin-top:16px;cursor:pointer" onclick="showProfile('${p.id}')">
                 <div style="display:flex;align-items:center;gap:12px">
@@ -756,11 +759,19 @@ async function showProfile(profileId) {
             }).join('') : '<div class="empty-state"><div class="empty-state-text">אין אפליקציות עדיין</div></div>'}
             <h3 class="section-title" style="font-size:1.2rem">פרומפטים (${prompts.length})</h3>
             ${prompts.length ? prompts.map((p, i) => `
-                <div class="prompt-card glass" onclick="openPromptFromData('${esc(p.title).replace(/'/g,"\\'")}','${esc(p.content).replace(/'/g,"\\'")}')">
+                <div class="prompt-card glass" data-prompt-idx="${i}" style="cursor:pointer">
                     <div class="prompt-title">${esc(p.title)}</div>
                     <div class="prompt-preview">${esc(p.content)}</div>
                 </div>
             `).join('') : '<div class="empty-state"><div class="empty-state-text">אין פרומפטים עדיין</div></div>'}`;
+        // Bind prompt clicks safely (no inline onclick with user data)
+        const profilePrompts = prompts;
+        el.querySelectorAll('[data-prompt-idx]').forEach(card => {
+            card.addEventListener('click', () => {
+                const pp = profilePrompts[parseInt(card.dataset.promptIdx)];
+                if (pp) { openPromptFromData(pp.title, pp.content); }
+            });
+        });
     } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת הפרופיל</div></div>'; }
 }
 
@@ -817,7 +828,7 @@ function renderMembers() {
     if (!membersData.length) { el.innerHTML = '<div class="empty-state" style="padding:20px"><div class="empty-state-text">עדיין אין משתתפים</div></div>'; return; }
     el.innerHTML = membersData.map(m => `
         <div class="member-item" onclick="showProfile('${m.id}')">
-            <img class="member-avatar" src="${esc(m.avatar_url||'')}" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23333%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2240%22>${(m.display_name||m.username||'?')[0]}</text></svg>'">
+            <img class="member-avatar" src="${esc(m.avatar_url||'')}" alt="" onerror="this.onerror=null;this.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'><circle cx=\\'50\\' cy=\\'50\\' r=\\'50\\' fill=\\'%23333\\'/><text x=\\'50\\' y=\\'68\\' text-anchor=\\'middle\\' fill=\\'white\\' font-size=\\'40\\'>${esc((m.display_name||m.username||'?')[0])}</text></svg>')">
             <span class="member-name">${esc(m.display_name || m.username)}</span>
         </div>`).join('');
 }
@@ -898,13 +909,18 @@ async function uploadAvatar(event) {
     const file = event.target.files[0];
     if (!file || !currentUser || !userProfile) return;
 
+    // Validate file type and size
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) { alert('סוג קובץ לא נתמך. השתמש ב-JPG, PNG, WebP או GIF.'); return; }
+    if (file.size > 2 * 1024 * 1024) { alert('הקובץ גדול מדי. מקסימום 2MB.'); return; }
+
     // Preview immediately
     const reader = new FileReader();
     reader.onload = e => { document.getElementById('profileAvatarPreview').src = e.target.result; };
     reader.readAsDataURL(file);
 
     // Upload to Supabase Storage
-    const ext = file.name.split('.').pop();
+    const ext = file.type.split('/')[1] === 'jpeg' ? 'jpg' : file.type.split('/')[1];
     const path = `avatars/${userProfile.id}.${ext}`;
     try {
         const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
@@ -1039,7 +1055,7 @@ async function submitCreate() {
     try {
         if (createType === 'app') {
             const url = document.getElementById('createUrl')?.value.trim();
-            if (!url) { alert('נא למלא קישור'); return; }
+            if (!url || !safeUrl(url)) { alert('נא למלא קישור תקין (https://...)'); btn.textContent = 'פרסם'; btn.disabled = false; return; }
             const { error } = await sb.from('apps').insert({ name, website_url: url, description: document.getElementById('createDesc')?.value.trim() || '', profile_id: userProfile.id });
             if (error) throw error;
         } else {
