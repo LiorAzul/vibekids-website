@@ -9,31 +9,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ========== VARIABLES ========== */
         :root {
             --bg: #050508;
             --surface: rgba(255,255,255,0.04);
             --surface-hover: rgba(255,255,255,0.08);
             --border: rgba(255,255,255,0.1);
             --border-strong: rgba(255,255,255,0.2);
-            --text: #ffffff;
+            --text: #fff;
             --text-dim: rgba(255,255,255,0.6);
             --text-muted: rgba(255,255,255,0.4);
             --accent: #6366f1;
             --accent-glow: rgba(99,102,241,0.3);
-            --green: #22c55e;
-            --pink: #ec4899;
-            --blue: #3b82f6;
-            --orange: #f97316;
             --glass-blur: 20px;
             --glass-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
             --radius: 20px;
             --radius-sm: 12px;
             --radius-full: 100px;
             --nav-height: 72px;
-            --top-height: 60px;
+            --top-height: 56px;
         }
-
         body.light {
             --bg: #f0f2f5;
             --surface: rgba(255,255,255,0.6);
@@ -46,1405 +40,938 @@
             --glass-shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
         }
 
-        /* ========== RESET ========== */
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        html { height: 100%; }
-        body {
-            font-family: 'Heebo', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100%;
-            overflow-x: hidden;
-            transition: background 0.4s, color 0.4s;
-            -webkit-font-smoothing: antialiased;
-        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{height:100%}
+        body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100%;overflow-x:hidden;transition:background .4s,color .4s;-webkit-font-smoothing:antialiased}
 
-        /* ========== SHADER BACKGROUND ========== */
-        #shader-bg {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            opacity: 0.35;
-            pointer-events: none;
-        }
-        body.light #shader-bg { opacity: 0.15; }
+        /* === SHADER BG === */
+        #shader-bg{position:fixed;inset:0;z-index:0;opacity:.35;pointer-events:none}
+        body.light #shader-bg{opacity:.15}
 
-        /* ========== GLASS EFFECTS ========== */
-        .glass {
-            background: var(--surface);
-            backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-            border: 1px solid var(--border);
-            box-shadow: var(--glass-shadow);
-            border-radius: var(--radius);
-            transition: all 0.3s ease;
-        }
-        .glass:hover { border-color: var(--border-strong); }
+        /* === GLASS === */
+        .glass{background:var(--surface);backdrop-filter:blur(var(--glass-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(180%);border:1px solid var(--border);box-shadow:var(--glass-shadow);border-radius:var(--radius);transition:all .3s ease}
+        .glass:hover{border-color:var(--border-strong)}
 
-        /* ========== GLASS BUTTON ========== */
-        .glass-btn {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: var(--surface);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-full);
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-        .glass-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(255,255,255,0.05);
-            pointer-events: none;
-        }
-        .glass-btn:hover {
-            transform: translateY(-2px);
-            border-color: var(--border-strong);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-        .glass-btn:active { transform: scale(0.97); }
+        /* === GLASS BTN === */
+        .glass-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;background:var(--surface);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius-full);color:var(--text);font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all .3s ease;overflow:hidden;white-space:nowrap}
+        .glass-btn::before{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:inset 2px 2px 4px rgba(255,255,255,.15),inset -1px -1px 3px rgba(255,255,255,.05);pointer-events:none}
+        .glass-btn:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+        .glass-btn:active{transform:scale(.97)}
+        .glass-btn.primary{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.3)}
+        .glass-btn.primary:hover{background:rgba(99,102,241,.35);box-shadow:0 0 30px var(--accent-glow)}
+        .glass-btn.whatsapp{background:rgba(37,211,102,.15);border-color:rgba(37,211,102,.3)}
+        .glass-btn.whatsapp:hover{background:rgba(37,211,102,.3)}
+        .glass-btn.small{padding:8px 16px;font-size:.85rem}
 
-        .glass-btn.primary {
-            background: rgba(99,102,241,0.2);
-            border-color: rgba(99,102,241,0.3);
-        }
-        .glass-btn.primary:hover {
-            background: rgba(99,102,241,0.35);
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
+        /* === HERO SECTION === */
+        #hero{position:relative;min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px 40px;z-index:10}
+        .hero-logo{width:220px;max-width:70%;filter:invert(1);transition:filter .4s;margin-bottom:16px}
+        body.light .hero-logo{filter:invert(0)}
+        .hero-greeting{font-size:1.3rem;font-weight:600;color:var(--text-dim);text-align:center;min-height:1.6em}
+        .hero-corner-btn{position:absolute;top:20px;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:all .3s;overflow:hidden;font-size:.95rem}
+        .hero-corner-btn:hover{border-color:var(--border-strong);transform:scale(1.08)}
+        .hero-corner-btn img{width:100%;height:100%;object-fit:cover}
+        .hero-corner-btn svg{width:18px;height:18px}
+        #heroAvatar{right:20px}
+        #heroTheme{left:20px}
 
-        .glass-btn.whatsapp {
-            background: rgba(37,211,102,0.15);
-            border-color: rgba(37,211,102,0.3);
-        }
-        .glass-btn.whatsapp:hover {
-            background: rgba(37,211,102,0.3);
-            box-shadow: 0 0 30px rgba(37,211,102,0.2);
-        }
+        /* === SCROLL HEADER === */
+        #top-bar{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--top-height);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(5,5,8,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transform:translateY(-100%);opacity:0;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s ease;pointer-events:none}
+        body.light #top-bar{background:rgba(240,242,245,.7)}
+        #top-bar.visible{transform:translateY(0);opacity:1;pointer-events:auto}
+        .top-logo{height:26px;filter:invert(1);transition:filter .4s}
+        body.light .top-logo{filter:invert(0)}
+        #top-bar.visible .top-logo{animation:logoScale .5s cubic-bezier(.34,1.56,.64,1)}
+        @keyframes logoScale{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+        .avatar-btn{width:34px;height:34px;border-radius:50%;border:2px solid var(--border-strong);background:var(--surface);overflow:hidden;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:.9rem}
+        .avatar-btn img{width:100%;height:100%;object-fit:cover}
+        .avatar-btn:hover{border-color:var(--accent);transform:scale(1.05)}
 
-        .glass-btn.small {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-        }
+        /* === CONTENT === */
+        #content{position:relative;z-index:10;padding-bottom:calc(var(--nav-height) + 20px);min-height:100vh}
+        .page{display:none;padding:0 16px;max-width:600px;margin:0 auto;animation:fadeIn .3s ease}
+        .page.active{display:block}
+        #page-community{padding-top:0}
+        .page:not(#page-community){padding-top:calc(var(--top-height) + 16px)}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-        /* ========== TOP BAR ========== */
-        #top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            height: var(--top-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            background: rgba(5,5,8,0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            transition: background 0.4s;
-        }
-        body.light #top-bar { background: rgba(240,242,245,0.7); }
+        /* === BOTTOM NAV === */
+        #bottom-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:4px;padding:8px 12px;background:rgba(20,20,30,.7);backdrop-filter:blur(25px) saturate(180%);-webkit-backdrop-filter:blur(25px) saturate(180%);border:1px solid var(--border);border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08)}
+        body.light #bottom-nav{background:rgba(255,255,255,.7);box-shadow:0 8px 40px rgba(0,0,0,.1)}
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 20px;border-radius:16px;cursor:pointer;color:var(--text-muted);font-size:.7rem;font-weight:600;transition:all .3s;background:transparent;border:none;font-family:inherit}
+        .nav-item svg{width:22px;height:22px;transition:all .3s}
+        .nav-item.active{color:var(--text);background:rgba(255,255,255,.08)}
+        body.light .nav-item.active{background:rgba(0,0,0,.05)}
+        .nav-item.active svg{transform:scale(1.1)}
 
-        .top-right { display: flex; align-items: center; gap: 8px; }
-        .top-left { display: flex; align-items: center; gap: 8px; }
+        /* === SECTIONS === */
+        .section-title{font-size:1.5rem;font-weight:800;margin:28px 0 16px;color:var(--text)}
+        .section-title:first-child{margin-top:8px}
 
-        .top-greeting {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+        .sub-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+        .sub-tabs::-webkit-scrollbar{display:none}
+        .sub-tab{padding:8px 18px;border-radius:var(--radius-full);font-size:.85rem;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all .3s;font-family:inherit}
+        .sub-tab.active{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.3);color:var(--text)}
 
-        .top-logo {
-            height: 28px;
-            filter: invert(1);
-            transition: filter 0.4s;
-        }
-        body.light .top-logo { filter: invert(0); }
+        .search-box{width:100%;padding:12px 18px;background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius-full);color:var(--text);font-family:inherit;font-size:.95rem;outline:none;margin-bottom:16px;transition:all .3s}
+        .search-box::placeholder{color:var(--text-muted)}
+        .search-box:focus{border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
 
-        .avatar-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 2px solid var(--border-strong);
-            background: var(--surface);
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-dim);
-            font-size: 1rem;
-        }
-        .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-btn:hover { border-color: var(--accent); transform: scale(1.05); }
+        /* === APP CARD === */
+        .app-card{padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;color:var(--text)}
+        .app-card:hover{transform:translateY(-2px)}
+        .app-icon{width:48px;height:48px;border-radius:14px;background:var(--surface-hover);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+        .app-icon img{width:100%;height:100%;object-fit:cover}
+        .app-info{flex:1;min-width:0}
+        .app-name{font-size:.95rem;font-weight:700;margin-bottom:2px}
+        .app-desc{font-size:.82rem;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .app-badge{font-size:.65rem;padding:2px 8px;border-radius:20px;background:rgba(99,102,241,.15);color:var(--accent);font-weight:600;display:inline-block;margin-right:6px}
+        .app-creator{display:flex;align-items:center;gap:6px;flex-shrink:0}
+        .app-creator-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid var(--border)}
+        .app-creator-name{font-size:.75rem;color:var(--text-muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-        /* Theme toggle */
-        .theme-toggle { display: flex; align-items: center; gap: 6px; }
-        .theme-toggle svg { width: 16px; height: 16px; color: var(--text-muted); transition: all 0.3s; }
-        .theme-switch {
-            width: 36px; height: 20px; border-radius: 10px;
-            background: var(--surface); border: 1px solid var(--border);
-            cursor: pointer; position: relative; transition: all 0.3s;
-        }
-        .theme-switch::after {
-            content: ''; position: absolute;
-            width: 16px; height: 16px; border-radius: 50%;
-            background: var(--text); top: 1px; right: 1px; transition: all 0.3s;
-        }
-        body.light .theme-switch::after { right: auto; left: 1px; }
+        /* === PROMPT CARD === */
+        .prompt-card{padding:16px;margin-bottom:10px;cursor:pointer}
+        .prompt-card:hover{transform:translateY(-2px)}
+        .prompt-title{font-size:1rem;font-weight:700;margin-bottom:6px}
+        .prompt-preview{font-size:.85rem;color:var(--text-dim);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .show-more-btn{display:block;width:100%;padding:12px;text-align:center;font-size:.9rem;font-weight:600;color:var(--accent);cursor:pointer;border-radius:var(--radius);background:transparent;border:1px dashed var(--border);font-family:inherit;transition:all .3s}
+        .show-more-btn:hover{background:var(--surface);border-style:solid}
 
-        /* ========== CONTENT AREA ========== */
-        #content {
-            position: relative;
-            z-index: 10;
-            padding-top: calc(var(--top-height) + 12px);
-            padding-bottom: calc(var(--nav-height) + 20px);
-            min-height: 100vh;
-        }
+        /* === GUIDE === */
+        .guide-card{padding:20px;margin-bottom:12px}
+        .guide-title{font-size:1.1rem;font-weight:700;margin-bottom:12px}
+        .pdf-frame{width:100%;height:400px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(0,0,0,.3);overflow:hidden}
+        .pdf-frame iframe{width:100%;height:100%;border:none}
 
-        .page {
-            display: none;
-            padding: 0 16px;
-            max-width: 600px;
-            margin: 0 auto;
-            animation: fadeIn 0.3s ease;
-        }
-        .page.active { display: block; }
+        /* === TOOLS === */
+        .tools-grid{display:flex;flex-direction:column;gap:8px}
+        .tool-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);text-decoration:none;color:var(--text);transition:all .3s}
+        .tool-row:hover{background:var(--surface-hover);transform:translateX(-4px)}
+        .tool-favicon{width:28px;height:28px;border-radius:6px;object-fit:contain}
+        .tool-name{font-weight:600;font-size:.9rem;flex:1}
+        .tool-desc{font-size:.8rem;color:var(--text-dim);max-width:50%;text-align:left}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* === MEMBERS === */
+        .members-scroll{display:flex;gap:16px;overflow-x:auto;padding:8px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+        .members-scroll::-webkit-scrollbar{display:none}
+        .member-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;transition:transform .2s}
+        .member-item:hover{transform:scale(1.05)}
+        .member-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:var(--surface)}
+        .member-name{font-size:.75rem;color:var(--text-dim);max-width:64px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-        /* ========== BOTTOM NAV ========== */
-        #bottom-nav {
-            position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 12px;
-            background: rgba(20,20,30,0.7);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-        body.light #bottom-nav {
-            background: rgba(255,255,255,0.7);
-            box-shadow: 0 8px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.5);
-        }
+        /* === NEWS === */
+        .news-card{padding:16px;margin-bottom:10px;cursor:pointer;text-decoration:none;color:var(--text);display:block}
+        .news-card:hover{transform:translateY(-2px)}
+        .news-title{font-size:1rem;font-weight:700;margin-bottom:6px;line-height:1.4}
+        .news-source{font-size:.75rem;color:var(--text-muted);margin-bottom:4px}
+        .news-desc{font-size:.85rem;color:var(--text-dim);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-            padding: 8px 20px; border-radius: 16px; cursor: pointer;
-            color: var(--text-muted); font-size: 0.7rem; font-weight: 600;
-            transition: all 0.3s ease; position: relative;
-            background: transparent; border: none; font-family: inherit;
-        }
-        .nav-item svg { width: 22px; height: 22px; transition: all 0.3s; }
-        .nav-item.active { color: var(--text); background: rgba(255,255,255,0.08); }
-        body.light .nav-item.active { background: rgba(0,0,0,0.05); }
-        .nav-item.active svg { transform: scale(1.1); }
+        /* === PROFILE PAGE === */
+        .profile-header{text-align:center;padding:20px 0 10px}
+        .profile-avatar-lg{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--border);margin-bottom:10px;background:var(--surface)}
+        .profile-name-lg{font-size:1.3rem;font-weight:800}
+        .profile-username-lg{font-size:.85rem;color:var(--text-dim);margin-top:2px}
+        .profile-bio-lg{font-size:.9rem;color:var(--text-dim);margin-top:8px;line-height:1.5}
 
-        .nav-item.create-btn {
-            background: rgba(99,102,241,0.2);
-            border: 1px solid rgba(99,102,241,0.3);
-            color: var(--accent); padding: 8px 24px;
-        }
-        .nav-item.create-btn:hover { background: rgba(99,102,241,0.35); box-shadow: 0 0 20px var(--accent-glow); }
+        /* === APP DETAIL PAGE === */
+        .app-detail-icon{width:96px;height:96px;border-radius:24px;object-fit:contain;margin-bottom:16px;border:1px solid var(--border);background:var(--surface)}
 
-        /* ========== SECTIONS ========== */
-        .section-title {
-            font-size: 1.5rem; font-weight: 800;
-            margin: 28px 0 16px; color: var(--text);
-        }
-        .section-title:first-child { margin-top: 8px; }
+        /* === BACK BTN === */
+        .back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 0;background:none;border:none;color:var(--accent);font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;margin-bottom:8px}
+        .back-btn svg{width:18px;height:18px}
 
-        /* ========== SUB TABS ========== */
-        .sub-tabs {
-            display: flex; gap: 6px; margin-bottom: 16px;
-            overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
-        }
-        .sub-tabs::-webkit-scrollbar { display: none; }
-        .sub-tab {
-            padding: 8px 18px; border-radius: var(--radius-full);
-            font-size: 0.85rem; font-weight: 600;
-            background: var(--surface); border: 1px solid var(--border);
-            color: var(--text-dim); cursor: pointer;
-            white-space: nowrap; transition: all 0.3s; font-family: inherit;
-        }
-        .sub-tab.active {
-            background: rgba(99,102,241,0.2);
-            border-color: rgba(99,102,241,0.3);
-            color: var(--text);
-        }
+        /* === MODALS === */
+        .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:flex-end;justify-content:center}
+        .modal-overlay.open{display:flex}
+        .modal-content{width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:24px 24px 40px;border-radius:24px 24px 0 0;background:rgba(20,20,30,.95);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid var(--border);border-bottom:none;box-shadow:0 -10px 40px rgba(0,0,0,.3);animation:slideUp .3s ease}
+        body.light .modal-content{background:rgba(255,255,255,.95)}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .modal-handle{width:40px;height:4px;background:var(--text-muted);border-radius:2px;margin:0 auto 20px}
+        .modal-title{font-size:1.3rem;font-weight:800;margin-bottom:20px;text-align:center}
 
-        /* ========== SEARCH ========== */
-        .search-box {
-            width: 100%; padding: 12px 18px;
-            background: var(--surface); backdrop-filter: blur(12px);
-            border: 1px solid var(--border); border-radius: var(--radius-full);
-            color: var(--text); font-family: inherit; font-size: 0.95rem;
-            outline: none; margin-bottom: 16px; transition: all 0.3s;
-        }
-        .search-box::placeholder { color: var(--text-muted); }
-        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:.85rem;font-weight:600;color:var(--text-dim);margin-bottom:6px}
+        .form-input{width:100%;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:.95rem;outline:none;transition:all .3s}
+        .form-input:focus{border-color:var(--accent)}
+        textarea.form-input{min-height:120px;resize:vertical}
 
-        /* ========== APP CARD ========== */
-        .app-card {
-            padding: 16px; margin-bottom: 12px;
-            display: flex; align-items: center; gap: 14px;
-            cursor: pointer; text-decoration: none; color: var(--text);
-        }
-        .app-card:hover { transform: translateY(-2px); }
-        .app-icon {
-            width: 50px; height: 50px; border-radius: 14px;
-            background: var(--surface-hover); border: 1px solid var(--border);
-            overflow: hidden; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .app-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .app-info { flex: 1; min-width: 0; }
-        .app-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
-        .app-desc {
-            font-size: 0.85rem; color: var(--text-dim);
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .app-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .app-badge {
-            font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
-            background: rgba(99,102,241,0.15); color: var(--accent);
-            font-weight: 600; display: inline-block;
-        }
+        .post-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);margin-bottom:8px}
+        .post-item-icon{width:32px;height:32px;border-radius:8px;object-fit:contain;flex-shrink:0;border:1px solid var(--border)}
+        .post-item-title{font-weight:600;font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .post-action-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+        .post-action-btn.delete:hover{background:rgba(239,68,68,.2);color:#ef4444}
 
-        /* ========== PROMPT CARD ========== */
-        .prompt-card {
-            padding: 16px; margin-bottom: 12px; cursor: pointer;
-        }
-        .prompt-card:hover { transform: translateY(-2px); }
-        .prompt-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-        .prompt-preview {
-            font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;
-            display: -webkit-box; -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical; overflow: hidden;
-        }
+        .create-options{display:flex;flex-direction:column;gap:12px}
+        .create-option{display:flex;align-items:center;gap:16px;padding:20px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .3s;color:var(--text);font-family:inherit;font-size:1rem;font-weight:600;text-align:right}
+        .create-option:hover{background:var(--surface-hover);transform:translateY(-2px)}
+        .create-option-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-        .show-more-btn {
-            display: block; width: 100%; padding: 12px;
-            text-align: center; font-size: 0.9rem; font-weight: 600;
-            color: var(--accent); cursor: pointer;
-            border-radius: var(--radius); transition: all 0.3s;
-            background: transparent; border: 1px dashed var(--border); font-family: inherit;
-        }
-        .show-more-btn:hover { background: var(--surface); border-style: solid; }
+        .google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:var(--radius-full);background:#fff;color:#333;font-family:inherit;font-size:1rem;font-weight:600;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+        .google-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+        .google-btn svg{width:20px;height:20px}
 
-        /* ========== GUIDE CARD ========== */
-        .guide-card { padding: 20px; margin-bottom: 12px; }
-        .guide-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
-        .pdf-frame {
-            width: 100%; height: 400px; border-radius: var(--radius-sm);
-            border: 1px solid var(--border); background: rgba(0,0,0,0.3); overflow: hidden;
-        }
-        .pdf-frame iframe { width: 100%; height: 100%; border: none; }
+        .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+        .empty-state-icon{font-size:2.5rem;margin-bottom:12px}
+        .empty-state-text{font-size:.95rem;line-height:1.6}
 
-        /* ========== TOOLS ========== */
-        .tools-grid { display: flex; flex-direction: column; gap: 8px; }
-        .tool-row {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; border-radius: var(--radius-sm);
-            background: var(--surface); border: 1px solid var(--border);
-            text-decoration: none; color: var(--text); transition: all 0.3s;
-        }
-        .tool-row:hover { background: var(--surface-hover); transform: translateX(-4px); }
-        .tool-favicon { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
-        .tool-name { font-weight: 600; font-size: 0.9rem; flex: 1; }
-        .tool-desc { font-size: 0.8rem; color: var(--text-dim); max-width: 50%; text-align: left; }
+        .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+        @keyframes spin{to{transform:rotate(360deg)}}
 
-        /* ========== CREATOR CARD ========== */
-        .creator-card {
-            padding: 20px; margin-bottom: 12px;
-            display: flex; align-items: center; gap: 16px;
-        }
-        .creator-photo {
-            width: 80px; height: 80px; border-radius: 20px;
-            object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;
-        }
-        .creator-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
-        .creator-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; }
-        .creator-link {
-            display: inline-block; margin-top: 6px;
-            font-size: 0.8rem; color: var(--accent); text-decoration: none;
-        }
+        .favicon-preview{text-align:center;margin:12px 0}
+        .favicon-preview img{width:64px;height:64px;border-radius:16px;border:1px solid var(--border);background:var(--surface)}
+        .favicon-preview-label{font-size:.75rem;color:var(--text-muted);margin-top:4px}
 
-        /* ========== NEWS CARD ========== */
-        .news-card {
-            padding: 16px; margin-bottom: 12px;
-            cursor: pointer; text-decoration: none; color: var(--text); display: block;
-        }
-        .news-card:hover { transform: translateY(-2px); }
-        .news-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
-        .news-source { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-        .news-desc {
-            font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;
-            display: -webkit-box; -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical; overflow: hidden;
-        }
-
-        /* ========== MODALS ========== */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0; z-index: 200;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            align-items: flex-end; justify-content: center;
-            animation: fadeIn 0.2s ease;
-        }
-        .modal-overlay.open { display: flex; }
-
-        .modal-content {
-            width: 100%; max-width: 500px; max-height: 85vh;
-            overflow-y: auto; padding: 24px; padding-bottom: 40px;
-            border-radius: 24px 24px 0 0;
-            background: rgba(20,20,30,0.95);
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--border); border-bottom: none;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease;
-        }
-        body.light .modal-content { background: rgba(255,255,255,0.95); }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-handle {
-            width: 40px; height: 4px; background: var(--text-muted);
-            border-radius: 2px; margin: 0 auto 20px;
-        }
-        .modal-title {
-            font-size: 1.3rem; font-weight: 800;
-            margin-bottom: 20px; text-align: center;
-        }
-
-        /* ========== FORMS ========== */
-        .form-group { margin-bottom: 16px; }
-        .form-label {
-            display: block; font-size: 0.85rem; font-weight: 600;
-            color: var(--text-dim); margin-bottom: 6px;
-        }
-        .form-input {
-            width: 100%; padding: 12px 16px;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); color: var(--text);
-            font-family: inherit; font-size: 0.95rem;
-            outline: none; transition: all 0.3s;
-        }
-        .form-input:focus { border-color: var(--accent); }
-        textarea.form-input { min-height: 120px; resize: vertical; }
-
-        /* ========== POST MANAGEMENT ========== */
-        .post-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px; border-radius: var(--radius-sm);
-            background: var(--surface); border: 1px solid var(--border); margin-bottom: 8px;
-        }
-        .post-item-title { font-weight: 600; font-size: 0.9rem; flex: 1; }
-        .post-actions { display: flex; gap: 6px; }
-        .post-action-btn {
-            width: 32px; height: 32px; border-radius: 8px;
-            border: 1px solid var(--border); background: transparent;
-            color: var(--text-dim); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; font-size: 0.85rem;
-        }
-        .post-action-btn:hover { background: var(--surface-hover); }
-        .post-action-btn.delete:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
-
-        /* ========== CREATE OPTIONS ========== */
-        .create-options { display: flex; flex-direction: column; gap: 12px; }
-        .create-option {
-            display: flex; align-items: center; gap: 16px; padding: 20px;
-            border-radius: var(--radius); background: var(--surface);
-            border: 1px solid var(--border); cursor: pointer; transition: all 0.3s;
-            color: var(--text); font-family: inherit; font-size: 1rem;
-            font-weight: 600; text-align: right;
-        }
-        .create-option:hover { background: var(--surface-hover); transform: translateY(-2px); }
-        .create-option-icon {
-            width: 48px; height: 48px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; font-size: 1.4rem;
-        }
-
-        /* ========== GOOGLE BTN ========== */
-        .google-btn {
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            width: 100%; padding: 14px; border-radius: var(--radius-full);
-            background: white; color: #333; font-family: inherit;
-            font-size: 1rem; font-weight: 600; border: none; cursor: pointer;
-            transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-        .google-btn svg { width: 20px; height: 20px; }
-
-        /* ========== EMPTY STATE ========== */
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-        .empty-state-icon { font-size: 2.5rem; margin-bottom: 12px; }
-        .empty-state-text { font-size: 0.95rem; line-height: 1.6; }
-
-        /* ========== SPINNER ========== */
-        .spinner {
-            width: 24px; height: 24px; border: 2px solid var(--border);
-            border-top-color: var(--accent); border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin: 20px auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ========== SCROLLBAR ========== */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
-
-        @media (min-width: 768px) {
-            .page { max-width: 640px; }
-            .nav-item { padding: 8px 28px; }
-        }
+        ::-webkit-scrollbar{width:4px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:2px}
+        @media(min-width:768px){.page{max-width:640px}.nav-item{padding:8px 28px}}
     </style>
 </head>
 <body>
 
-    <!-- Shader Background -->
-    <div id="shader-bg"></div>
+<div id="shader-bg"></div>
 
-    <!-- Top Bar -->
-    <div id="top-bar">
-        <div class="top-right">
-            <img src="vibekids logo.svg" alt="VibeKids" class="top-logo">
-        </div>
-        <div class="top-left">
-            <span class="top-greeting" id="topGreeting"></span>
-            <div class="theme-toggle">
+<!-- Scroll Header (hidden by default) -->
+<div id="top-bar">
+    <div><img src="vibekids logo.svg" alt="VibeKids" class="top-logo"></div>
+    <button class="avatar-btn" id="headerAvatar" onclick="handleAvatarClick()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+</div>
+
+<div id="content">
+
+    <!-- ===== PAGE: COMMUNITY ===== -->
+    <div class="page active" id="page-community">
+
+        <!-- Hero -->
+        <div id="hero">
+            <button class="hero-corner-btn" id="heroTheme" onclick="toggleTheme()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <div class="theme-switch" id="themeSwitch"></div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <button class="hero-corner-btn" id="heroAvatar" onclick="handleAvatarClick()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+            <img src="vibekids logo.svg" alt="VibeKids" class="hero-logo">
+            <div class="hero-greeting" id="heroGreeting"></div>
+        </div>
+
+        <!-- Apps -->
+        <h2 class="section-title">אפליקציות</h2>
+        <div class="sub-tabs" id="appsSubTabs">
+            <button class="sub-tab active" data-tab="new">חדש</button>
+            <button class="sub-tab" data-tab="random">אקראי</button>
+            <button class="sub-tab" data-tab="search">חיפוש</button>
+        </div>
+        <div id="appsSearchBox" style="display:none">
+            <input type="text" class="search-box" placeholder="חפש אפליקציה או יוצר..." id="appsSearchInput" oninput="handleAppSearch()">
+        </div>
+        <div id="appsList"><div class="spinner"></div></div>
+
+        <!-- Prompts -->
+        <h2 class="section-title">פרומפטים</h2>
+        <div id="promptsList"></div>
+        <button class="show-more-btn" id="showMorePrompts" onclick="loadMorePrompts()" style="display:none">הצג עוד</button>
+
+        <!-- Guides -->
+        <h2 class="section-title">מדריכים</h2>
+        <div class="guide-card glass">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <span class="guide-title" style="margin:0">מדריך Xcode + Cursor</span>
+                <a href="Idea_To_App_AI_Speed.pdf" download class="glass-btn small">הורד PDF</a>
             </div>
-            <button class="avatar-btn" id="avatarBtn" onclick="handleAvatarClick()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <div class="pdf-frame"><iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" loading="lazy"></iframe></div>
+        </div>
+
+        <!-- Tools -->
+        <h2 class="section-title">כלי וייב קודינג</h2>
+        <div class="tools-grid" id="toolsGrid"></div>
+
+        <!-- Members -->
+        <h2 class="section-title">משתתפים</h2>
+        <div class="members-scroll" id="membersList"></div>
+
+        <!-- Links -->
+        <h2 class="section-title">קישורים</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+            <a href="https://chat.whatsapp.com/ISBH9r08Kpl0fp2NTL4kDT" target="_blank" class="glass-btn whatsapp" style="width:100%;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                הצטרפו לקבוצה בווטסאפ
+            </a>
+            <a href="https://www.facebook.com/share/g/18DEoUM5Q7/?mibextid=wwXIfr" target="_blank" class="glass-btn" style="width:100%;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                הצטרפו לקבוצה בפייסבוק
+            </a>
+            <a href="https://apps.apple.com/il/app/vibekids/id6756629285" target="_blank" class="glass-btn" style="width:100%;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                הורדת האפליקציה
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== PAGE: WORLD ===== -->
+    <div class="page" id="page-world">
+        <h2 class="section-title">חדשות Vibe Coding</h2>
+        <div id="newsList"><div class="spinner"></div></div>
+        <h2 class="section-title">כלי וייב קודינג</h2>
+        <div class="tools-grid" id="worldToolsGrid"></div>
+    </div>
+
+    <!-- ===== PAGE: PROFILE (dynamic) ===== -->
+    <div class="page" id="page-profile">
+        <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> חזור</button>
+        <div id="profilePageContent"><div class="spinner"></div></div>
+    </div>
+
+    <!-- ===== PAGE: APP DETAIL (dynamic) ===== -->
+    <div class="page" id="page-app">
+        <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> חזור</button>
+        <div id="appDetailContent"><div class="spinner"></div></div>
+    </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<nav id="bottom-nav">
+    <button class="nav-item active" data-page="community" onclick="switchPage('community')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>מהקהילה</span>
+    </button>
+    <button class="nav-item" onclick="openCreateModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>העלה</span>
+    </button>
+    <button class="nav-item" data-page="world" onclick="switchPage('world')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>מהעולם</span>
+    </button>
+</nav>
+
+<!-- MODAL: Auth -->
+<div class="modal-overlay" id="modalAuth">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">התחברות</div>
+        <p style="text-align:center;color:var(--text-dim);margin-bottom:24px;font-size:.95rem">התחבר כדי לשתף עם הקהילה</p>
+        <button class="google-btn" onclick="signInWithGoogle()">
+            <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            התחבר עם Google
+        </button>
+    </div>
+</div>
+
+<!-- MODAL: Profile Settings -->
+<div class="modal-overlay" id="modalProfile">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">הפרופיל שלי</div>
+        <div class="form-group"><label class="form-label">שם תצוגה</label><input type="text" class="form-input" id="profileDisplayName" placeholder="השם שלך"></div>
+        <div class="form-group"><label class="form-label">שם משתמש</label><input type="text" class="form-input" id="profileUsername" placeholder="username" dir="ltr"></div>
+        <button class="glass-btn primary" style="width:100%;margin-bottom:20px" onclick="saveProfile()">שמור</button>
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px">האפליקציות שלי</h3>
+        <div id="myAppsList"></div>
+        <h3 style="font-size:1rem;font-weight:700;margin:16px 0 10px">הפרומפטים שלי</h3>
+        <div id="myPromptsList"></div>
+        <button class="glass-btn" style="width:100%;margin-top:20px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="signOut()">התנתק</button>
+    </div>
+</div>
+
+<!-- MODAL: Prompt Detail -->
+<div class="modal-overlay" id="modalPrompt">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title" id="promptModalTitle"></div>
+        <div id="promptModalContent" style="white-space:pre-wrap;color:var(--text-dim);line-height:1.7;font-size:.95rem;direction:ltr;text-align:left"></div>
+        <button class="glass-btn" style="width:100%;margin-top:20px" onclick="copyPrompt()">העתק פרומפט</button>
+    </div>
+</div>
+
+<!-- MODAL: Create Options -->
+<div class="modal-overlay" id="modalCreate">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">מה תרצה לשתף?</div>
+        <div class="create-options">
+            <button class="create-option" onclick="openCreateForm('app')">
+                <div class="create-option-icon" style="background:rgba(59,130,246,.15);color:#3b82f6"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+                <div><div>קישור לאפליקציה</div><div style="font-size:.8rem;font-weight:400;color:var(--text-dim)">שתף אפליקציה שבנית</div></div>
+            </button>
+            <button class="create-option" onclick="openCreateForm('prompt')">
+                <div class="create-option-icon" style="background:rgba(168,85,247,.15);color:#a855f7"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                <div><div>פרומפט</div><div style="font-size:.8rem;font-weight:400;color:var(--text-dim)">שתף פרומפט שעבד לך</div></div>
             </button>
         </div>
     </div>
+</div>
 
-    <!-- Content -->
-    <div id="content">
-
-        <!-- PAGE: COMMUNITY -->
-        <div class="page active" id="page-community">
-
-            <!-- Apps -->
-            <h2 class="section-title">אפליקציות</h2>
-            <div class="sub-tabs" id="appsSubTabs">
-                <button class="sub-tab active" data-tab="new">חדש</button>
-                <button class="sub-tab" data-tab="random">אקראי</button>
-                <button class="sub-tab" data-tab="search">חיפוש</button>
-            </div>
-            <div id="appsSearchBox" style="display:none">
-                <input type="text" class="search-box" placeholder="חפש אפליקציה או יוצר..." id="appsSearchInput" oninput="handleAppSearch()">
-            </div>
-            <div id="appsList"><div class="spinner"></div></div>
-
-            <!-- Prompts -->
-            <h2 class="section-title">פרומפטים</h2>
-            <div id="promptsList"></div>
-            <button class="show-more-btn" id="showMorePrompts" onclick="loadMorePrompts()" style="display:none">הצג עוד</button>
-
-            <!-- Guides -->
-            <h2 class="section-title">מדריכים</h2>
-            <div class="guide-card glass">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                    <span class="guide-title" style="margin:0">מדריך Xcode + Cursor</span>
-                    <a href="Idea_To_App_AI_Speed.pdf" download class="glass-btn small">הורד PDF</a>
-                </div>
-                <div class="pdf-frame">
-                    <iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" loading="lazy"></iframe>
-                </div>
-            </div>
-
-            <!-- Tools -->
-            <h2 class="section-title">כלי וייב קודינג</h2>
-            <div class="tools-grid" id="toolsGrid"></div>
-
-            <!-- Links -->
-            <h2 class="section-title">קישורים</h2>
-            <div style="display:flex;flex-direction:column;gap:10px">
-                <a href="https://chat.whatsapp.com/ISBH9r08Kpl0fp2NTL4kDT" target="_blank" class="glass-btn whatsapp" style="width:100%;justify-content:center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                    הצטרפו לקבוצה בווטסאפ
-                </a>
-                <a href="https://www.facebook.com/share/g/18DEoUM5Q7/?mibextid=wwXIfr" target="_blank" class="glass-btn" style="width:100%;justify-content:center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    הצטרפו לקבוצה בפייסבוק
-                </a>
-                <a href="https://apps.apple.com/il/app/vibekids/id6756629285" target="_blank" class="glass-btn" style="width:100%;justify-content:center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                    הורדת האפליקציה
-                </a>
-            </div>
-
-            <!-- Creators -->
-            <h2 class="section-title">יוצרי הקהילה</h2>
-            <div class="creator-card glass">
-                <img src="IMG_2973.png" alt="ליאור" class="creator-photo">
-                <div>
-                    <div class="creator-name">ליאור</div>
-                    <p class="creator-desc">בן 24 מרחובות, מאמין שהרובוטים כאן להשתלט על העולם</p>
-                    <a class="creator-link" href="https://www.youtube.com/@vibekidsone" target="_blank">ערוץ היוטיוב &larr;</a>
-                </div>
-            </div>
-            <div style="height:20px"></div>
-        </div>
-
-        <!-- PAGE: CREATE (shown via modal) -->
-        <div class="page" id="page-create"></div>
-
-        <!-- PAGE: WORLD -->
-        <div class="page" id="page-world">
-            <h2 class="section-title">חדשות מהעולם</h2>
-            <div id="newsList"><div class="spinner"></div></div>
-
-            <h2 class="section-title">כלי וייב קודינג</h2>
-            <div class="tools-grid" id="worldToolsGrid"></div>
-        </div>
+<!-- MODAL: Create Form -->
+<div class="modal-overlay" id="modalCreateForm">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title" id="createFormTitle"></div>
+        <div id="createFormFields"></div>
+        <button class="glass-btn primary" style="width:100%" id="createFormSubmit" onclick="submitCreate()">פרסם</button>
     </div>
+</div>
 
-    <!-- Bottom Nav -->
-    <nav id="bottom-nav">
-        <button class="nav-item active" data-page="community" onclick="switchPage('community')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>מהקהילה</span>
-        </button>
-        <button class="nav-item create-btn" onclick="openCreateModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>העלה</span>
-        </button>
-        <button class="nav-item" data-page="world" onclick="switchPage('world')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span>מהעולם</span>
-        </button>
-    </nav>
+<script>
+// ====== CONFIG ======
+const SUPABASE_URL = 'https://ziaefmhricdsojfpexca.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppYWVmbWhyaWNkc29qZnBleGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4OTkzOTcsImV4cCI6MjA4MTQ3NTM5N30.1wuUxB6ttiYLkAZSpohbb5OXvlAu1BzbNJ6-gWhz1zo';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <!-- MODAL: Auth -->
-    <div class="modal-overlay" id="modalAuth">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-handle"></div>
-            <div class="modal-title">התחברות</div>
-            <p style="text-align:center;color:var(--text-dim);margin-bottom:24px;font-size:0.95rem">
-                התחבר כדי לשתף אפליקציות ופרומפטים עם הקהילה
-            </p>
-            <button class="google-btn" onclick="signInWithGoogle()">
-                <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                התחבר עם Google
-            </button>
-        </div>
-    </div>
+// ====== STATE ======
+let currentUser = null;
+let userProfile = null;
+let currentPage = 'community';
+let previousPage = 'community';
+let appsData = [];
+let promptsData = [];
+let membersData = [];
+let promptsLimit = 4;
+let createType = '';
 
-    <!-- MODAL: Profile -->
-    <div class="modal-overlay" id="modalProfile">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-handle"></div>
-            <div class="modal-title">הפרופיל שלי</div>
-            <div class="form-group">
-                <label class="form-label">שם תצוגה</label>
-                <input type="text" class="form-input" id="profileDisplayName" placeholder="השם שלך">
-            </div>
-            <div class="form-group">
-                <label class="form-label">שם משתמש</label>
-                <input type="text" class="form-input" id="profileUsername" placeholder="username" dir="ltr">
-            </div>
-            <button class="glass-btn primary" style="width:100%;margin-bottom:24px" onclick="saveProfile()">שמור שינויים</button>
+// ====== GREETINGS ======
+const greetings = [
+    'רק וייבים טובים, {name}', 'מה נבנה היום, {name}?', 'הקוד זורם, {name}',
+    'בוא נעשה קסם, {name}', 'Vibe coding time, {name}', 'היי {name}, מוכן ליצור?',
+    'Let\'s vibe, {name}', '{name}, הדור החדש'
+];
+const defaultGreetings = ['הדור החדש של המתכנתים', 'Vibe Coding Starts Here', 'בנה. שתף. התחבר.'];
 
-            <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:12px">הפוסטים שלי</h3>
-            <div id="myPostsList"><div class="empty-state"><div class="empty-state-text">אין פוסטים עדיין</div></div></div>
+function getGreeting(name) {
+    if (name) { const g = greetings[Math.floor(Math.random() * greetings.length)]; return g.replace('{name}', name); }
+    return defaultGreetings[Math.floor(Math.random() * defaultGreetings.length)];
+}
 
-            <button class="glass-btn" style="width:100%;margin-top:20px;color:#ef4444;border-color:rgba(239,68,68,0.3)" onclick="signOut()">התנתק</button>
-        </div>
-    </div>
+// ====== TOOLS (static) ======
+const tools = [
+    { name: 'Lovable', url: 'https://lovable.dev/', desc: 'פופולרי, פשוט' },
+    { name: 'Base44', url: 'https://base44.com/', desc: 'מיזם ישראלי' },
+    { name: 'V0', url: 'https://v0.app/', desc: 'מבית Vercel' },
+    { name: 'Bolt.new', url: 'https://bolt.new/', desc: 'Node.js וטרמינל' },
+    { name: 'Replit', url: 'https://replit.com/', desc: 'למתחילים ולמנוסים' },
+    { name: 'Google AI Studio', url: 'https://aistudio.google.com/apps', desc: 'מבית גוגל' },
+    { name: 'GitHub Copilot', url: 'https://github.com/copilot', desc: 'מבית GitHub' },
+    { name: 'Cursor', url: 'https://cursor.com/', desc: 'פופולרי (למחשב)' },
+    { name: 'Antigravity', url: 'https://antigravity.google/', desc: 'מאת גוגל' },
+    { name: 'Codex', url: 'https://openai.com/codex/', desc: 'מאת OpenAI' },
+    { name: 'Gemini CLI', url: 'https://geminicli.com/', desc: 'בטרמינל' },
+    { name: 'Claude Code', url: 'https://claude.com/product/claude-code', desc: 'פופולרי מאוד' },
+];
 
-    <!-- MODAL: Prompt Detail -->
-    <div class="modal-overlay" id="modalPrompt">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-handle"></div>
-            <div class="modal-title" id="promptModalTitle"></div>
-            <div id="promptModalContent" style="white-space:pre-wrap;color:var(--text-dim);line-height:1.7;font-size:0.95rem;direction:ltr;text-align:left"></div>
-            <button class="glass-btn" style="width:100%;margin-top:20px" onclick="copyPrompt()">העתק פרומפט</button>
-        </div>
-    </div>
+// ====== HELPERS ======
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function getFavicon(url, size = 64) { try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`; } catch { return ''; } }
+function getAppUrl(a) { return a.website_url || a.app_store_url || a.play_store_url || ''; }
 
-    <!-- MODAL: Create Options -->
-    <div class="modal-overlay" id="modalCreate">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-handle"></div>
-            <div class="modal-title">מה תרצה לשתף?</div>
-            <div class="create-options">
-                <button class="create-option" onclick="openCreateForm('app')">
-                    <div class="create-option-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                    </div>
-                    <div>
-                        <div>קישור לאפליקציה</div>
-                        <div style="font-size:0.8rem;font-weight:400;color:var(--text-dim)">שתף אפליקציה שבנית</div>
-                    </div>
-                </button>
-                <button class="create-option" onclick="openCreateForm('prompt')">
-                    <div class="create-option-icon" style="background:rgba(168,85,247,0.15);color:#a855f7">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    </div>
-                    <div>
-                        <div>פרומפט</div>
-                        <div style="font-size:0.8rem;font-weight:400;color:var(--text-dim)">שתף פרומפט שעבד לך</div>
-                    </div>
-                </button>
-            </div>
-        </div>
-    </div>
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', async () => {
+    initShader();
+    initTheme();
+    initScrollObserver();
+    renderTools('toolsGrid');
+    renderTools('worldToolsGrid');
+    initSubTabs();
 
-    <!-- MODAL: Create Form -->
-    <div class="modal-overlay" id="modalCreateForm">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-handle"></div>
-            <div class="modal-title" id="createFormTitle"></div>
-            <div id="createFormFields"></div>
-            <button class="glass-btn primary" style="width:100%" id="createFormSubmit" onclick="submitCreate()">פרסם</button>
-        </div>
-    </div>
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { currentUser = session.user; await loadProfile(); }
 
-    <script>
-    // ==========================================
-    // CONFIG
-    // ==========================================
-    const SUPABASE_URL = 'https://ziaefmhricdsojfpexca.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppYWVmbWhyaWNkc29qZnBleGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4OTkzOTcsImV4cCI6MjA4MTQ3NTM5N30.1wuUxB6ttiYLkAZSpohbb5OXvlAu1BzbNJ6-gWhz1zo';
-
-    // ==========================================
-    // STATE
-    // ==========================================
-    let currentUser = null;
-    let userProfile = null;  // from profiles table
-    let currentPage = 'community';
-    let appsData = [];
-    let promptsData = [];
-    let promptsLimit = 4;
-    let createType = '';
-
-    // ==========================================
-    // SUPABASE
-    // ==========================================
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ==========================================
-    // GREETINGS
-    // ==========================================
-    const greetings = [
-        'רק וייבים טובים, {name}',
-        'מה נבנה היום, {name}?',
-        'הקוד זורם, {name}',
-        'בוא נעשה קסם, {name}',
-        'Vibe coding time, {name}',
-        'הדור החדש, {name}',
-        'היי {name}, מוכן ליצור?',
-        'Let\'s vibe, {name}',
-    ];
-    const defaultGreetings = [
-        'הדור החדש של המתכנתים',
-        'Vibe Coding Starts Here',
-        'בנה. שתף. התחבר.',
-    ];
-
-    function getGreeting(name) {
-        if (name) {
-            const g = greetings[Math.floor(Math.random() * greetings.length)];
-            return g.replace('{name}', name);
-        }
-        return defaultGreetings[Math.floor(Math.random() * defaultGreetings.length)];
-    }
-
-    // ==========================================
-    // TOOLS DATA (static)
-    // ==========================================
-    const tools = [
-        { name: 'Lovable', url: 'https://lovable.dev/', desc: 'פופולרי, פשוט' },
-        { name: 'Base44', url: 'https://base44.com/', desc: 'מיזם ישראלי פופולרי' },
-        { name: 'V0', url: 'https://v0.app/', desc: 'מבית Vercel' },
-        { name: 'Bolt.new', url: 'https://bolt.new/', desc: 'מריץ Node.js וטרמינל' },
-        { name: 'Replit', url: 'https://replit.com/', desc: 'למתחילים ולמנוסים' },
-        { name: 'Google AI Studio', url: 'https://aistudio.google.com/apps', desc: 'מבית גוגל' },
-        { name: 'GitHub Copilot', url: 'https://github.com/copilot', desc: 'מבית GitHub' },
-        { name: 'Cursor', url: 'https://cursor.com/', desc: 'פופולרי (למחשב)' },
-        { name: 'Antigravity', url: 'https://antigravity.google/', desc: 'מאת גוגל' },
-        { name: 'Codex', url: 'https://openai.com/codex/', desc: 'מאת OpenAI' },
-        { name: 'Gemini CLI', url: 'https://geminicli.com/', desc: 'בטרמינל' },
-        { name: 'Claude Code', url: 'https://claude.com/product/claude-code', desc: 'פופולרי, יכולות מרשימות' },
-    ];
-
-    // ==========================================
-    // INIT
-    // ==========================================
-    document.addEventListener('DOMContentLoaded', async () => {
-        initShader();
-        initTheme();
-        renderTools('toolsGrid');
-        renderTools('worldToolsGrid');
-        initSubTabs();
-
-        // Check session
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) {
-            currentUser = session.user;
-            await loadProfile();
-        }
-
-        // Auth state listener
-        sb.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                currentUser = session.user;
-                await loadProfile();
-                closeAllModals();
-            }
-            if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                userProfile = null;
-            }
-            updateUI();
-        });
-
-        await Promise.all([loadApps(), loadPrompts()]);
+    sb.auth.onAuthStateChange(async (ev, session) => {
+        if (ev === 'SIGNED_IN' && session) { currentUser = session.user; await loadProfile(); closeAllModals(); }
+        if (ev === 'SIGNED_OUT') { currentUser = null; userProfile = null; }
         updateUI();
     });
 
-    // ==========================================
-    // THEME
-    // ==========================================
-    function initTheme() {
-        if (localStorage.getItem('vk-theme') === 'light') document.body.classList.add('light');
-        document.getElementById('themeSwitch').addEventListener('click', () => {
-            document.body.classList.toggle('light');
-            localStorage.setItem('vk-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    await Promise.all([loadApps(), loadPrompts(), loadMembers()]);
+    updateUI();
+});
+
+// ====== THEME ======
+function initTheme() {
+    if (localStorage.getItem('vk-theme') === 'light') document.body.classList.add('light');
+}
+function toggleTheme() {
+    document.body.classList.toggle('light');
+    localStorage.setItem('vk-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+
+// ====== SCROLL HEADER ======
+function initScrollObserver() {
+    const hero = document.getElementById('hero');
+    const topBar = document.getElementById('top-bar');
+    if (!hero) return;
+    const obs = new IntersectionObserver(([entry]) => {
+        if (currentPage === 'community') topBar.classList.toggle('visible', !entry.isIntersecting);
+    }, { threshold: 0.05 });
+    obs.observe(hero);
+}
+
+// ====== NAVIGATION ======
+function switchPage(page) {
+    if (page !== currentPage) previousPage = currentPage;
+    currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page)?.classList.add('active');
+    document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+    document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+
+    const topBar = document.getElementById('top-bar');
+    if (page !== 'community') topBar.classList.add('visible');
+    // For community, the IntersectionObserver handles it
+
+    if (page === 'world' && document.querySelector('#newsList .spinner')) loadNews();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goBack() { switchPage(previousPage || 'community'); }
+
+// ====== SUB TABS ======
+function initSubTabs() {
+    document.querySelectorAll('#appsSubTabs .sub-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('#appsSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const t = tab.dataset.tab;
+            document.getElementById('appsSearchBox').style.display = t === 'search' ? 'block' : 'none';
+            if (t === 'new') renderApps(appsData);
+            else if (t === 'random') renderApps(shuffle([...appsData]));
+            else { document.getElementById('appsSearchInput').focus(); handleAppSearch(); }
         });
-    }
+    });
+}
+function handleAppSearch() {
+    const q = document.getElementById('appsSearchInput').value.trim().toLowerCase();
+    if (!q) return renderApps(appsData);
+    renderApps(appsData.filter(a => a.name.toLowerCase().includes(q) || (a.description||'').toLowerCase().includes(q) || (a._creatorName||'').toLowerCase().includes(q)));
+}
 
-    // ==========================================
-    // WEBGL PLASMA SHADER
-    // ==========================================
-    function initShader() {
-        const container = document.getElementById('shader-bg');
-        if (!container) return;
+// ====== APPS ======
+async function loadApps() {
+    try {
+        const { data } = await sb.from('apps').select('*, profiles(id, display_name, username, avatar_url)').order('created_at', { ascending: false });
+        appsData = (data || []).map(a => ({ ...a, _creatorName: a.profiles?.display_name || a.profiles?.username || '' }));
+    } catch (e) { appsData = []; }
+    renderApps(appsData);
+}
 
-        const canvas = document.createElement('canvas');
-        canvas.style.cssText = 'width:100%;height:100%';
-        container.appendChild(canvas);
-
-        const gl = canvas.getContext('webgl');
-        if (!gl) return;
-
-        const vsSource = `
-            attribute vec4 aVertexPosition;
-            void main() { gl_Position = aVertexPosition; }
-        `;
-
-        const fsSource = `
-            precision highp float;
-            uniform vec2 iResolution;
-            uniform float iTime;
-
-            const float overallSpeed = 0.04;
-            const float gridSmoothWidth = 0.015;
-            const float axisWidth = 0.05;
-            const float majorLineWidth = 0.025;
-            const float minorLineWidth = 0.0125;
-            const float majorLineFrequency = 5.0;
-            const float minorLineFrequency = 1.0;
-            const vec4 gridColor = vec4(0.5);
-            const float scale = 5.0;
-            const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0);
-            const float minLineWidth = 0.01;
-            const float maxLineWidth = 0.2;
-            const float lineSpeed = 1.0 * overallSpeed;
-            const float lineAmplitude = 1.0;
-            const float lineFrequency = 0.2;
-            const float warpSpeed = 0.2 * overallSpeed;
-            const float warpFrequency = 0.5;
-            const float warpAmplitude = 1.0;
-            const float offsetFrequency = 0.5;
-            const float offsetSpeed = 1.33 * overallSpeed;
-            const float minOffsetSpread = 0.6;
-            const float maxOffsetSpread = 2.0;
-            const int linesPerGroup = 16;
-
-            #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
-            #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
-            #define drawCrispLine(pos, halfWidth, t) smoothstep(halfWidth + gridSmoothWidth, halfWidth, abs(pos - (t)))
-            #define drawPeriodicLine(freq, width, t) drawCrispLine(freq / 2.0, width, abs(mod(t, freq) - (freq) / 2.0))
-
-            float drawGridLines(float axis) {
-                return drawCrispLine(0.0, axisWidth, axis)
-                    + drawPeriodicLine(majorLineFrequency, majorLineWidth, axis)
-                    + drawPeriodicLine(minorLineFrequency, minorLineWidth, axis);
-            }
-
-            float drawGrid(vec2 space) {
-                return min(1.0, drawGridLines(space.x) + drawGridLines(space.y));
-            }
-
-            float random(float t) {
-                return (cos(t) + cos(t * 1.3 + 1.3) + cos(t * 1.4 + 1.4)) / 3.0;
-            }
-
-            float getPlasmaY(float x, float horizontalFade, float offset) {
-                return random(x * lineFrequency + iTime * lineSpeed) * horizontalFade * lineAmplitude + offset;
-            }
-
-            void main() {
-                vec2 fragCoord = gl_FragCoord.xy;
-                vec4 fragColor;
-                vec2 uv = fragCoord.xy / iResolution.xy;
-                vec2 space = (fragCoord - iResolution.xy / 2.0) / iResolution.x * 2.0 * scale;
-
-                float horizontalFade = 1.0 - (cos(uv.x * 6.28) * 0.5 + 0.5);
-                float verticalFade = 1.0 - (cos(uv.y * 6.28) * 0.5 + 0.5);
-
-                space.y += random(space.x * warpFrequency + iTime * warpSpeed) * warpAmplitude * (0.5 + horizontalFade);
-                space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
-
-                vec4 lines = vec4(0.0);
-                vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0);
-                vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0);
-
-                for(int l = 0; l < linesPerGroup; l++) {
-                    float normalizedLineIndex = float(l) / float(linesPerGroup);
-                    float offsetTime = iTime * offsetSpeed;
-                    float offsetPosition = float(l) + space.x * offsetFrequency;
-                    float rand = random(offsetPosition + offsetTime) * 0.5 + 0.5;
-                    float halfWidth = mix(minLineWidth, maxLineWidth, rand * horizontalFade) / 2.0;
-                    float offset = random(offsetPosition + offsetTime * (1.0 + normalizedLineIndex)) * mix(minOffsetSpread, maxOffsetSpread, horizontalFade);
-                    float linePosition = getPlasmaY(space.x, horizontalFade, offset);
-                    float line = drawSmoothLine(linePosition, halfWidth, space.y) / 2.0 + drawCrispLine(linePosition, halfWidth * 0.15, space.y);
-
-                    float circleX = mod(float(l) + iTime * lineSpeed, 25.0) - 12.0;
-                    vec2 circlePosition = vec2(circleX, getPlasmaY(circleX, horizontalFade, offset));
-                    float circle = drawCircle(circlePosition, 0.01, space) * 4.0;
-
-                    line = line + circle;
-                    lines += line * lineColor * rand;
-                }
-
-                fragColor = mix(bgColor1, bgColor2, uv.x);
-                fragColor *= verticalFade;
-                fragColor.a = 1.0;
-                fragColor += lines;
-
-                gl_FragColor = fragColor;
-            }
-        `;
-
-        function loadShader(type, source) {
-            const shader = gl.createShader(type);
-            gl.shaderSource(shader, source);
-            gl.compileShader(shader);
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.error('Shader error:', gl.getShaderInfoLog(shader));
-                gl.deleteShader(shader);
-                return null;
-            }
-            return shader;
-        }
-
-        const vs = loadShader(gl.VERTEX_SHADER, vsSource);
-        const fs = loadShader(gl.FRAGMENT_SHADER, fsSource);
-        if (!vs || !fs) return;
-
-        const program = gl.createProgram();
-        gl.attachShader(program, vs);
-        gl.attachShader(program, fs);
-        gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Link error:', gl.getProgramInfoLog(program));
-            return;
-        }
-
-        const posLoc = gl.getAttribLocation(program, 'aVertexPosition');
-        const resLoc = gl.getUniformLocation(program, 'iResolution');
-        const timeLoc = gl.getUniformLocation(program, 'iTime');
-
-        const buf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            gl.viewport(0, 0, canvas.width, canvas.height);
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        const startTime = Date.now();
-        (function render() {
-            requestAnimationFrame(render);
-            const t = (Date.now() - startTime) / 1000;
-            gl.clearColor(0, 0, 0, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            gl.useProgram(program);
-            gl.uniform2f(resLoc, canvas.width, canvas.height);
-            gl.uniform1f(timeLoc, t);
-            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(posLoc);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        })();
-    }
-
-    // ==========================================
-    // NAVIGATION
-    // ==========================================
-    function switchPage(page) {
-        currentPage = page;
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + page)?.classList.add('active');
-        document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
-        document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
-
-        if (page === 'world' && document.querySelector('#newsList .spinner')) loadNews();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ==========================================
-    // SUB TABS
-    // ==========================================
-    function initSubTabs() {
-        document.querySelectorAll('#appsSubTabs .sub-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('#appsSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const type = tab.dataset.tab;
-                document.getElementById('appsSearchBox').style.display = type === 'search' ? 'block' : 'none';
-                if (type === 'new') renderApps(appsData);
-                else if (type === 'random') renderApps(shuffle([...appsData]));
-                else { document.getElementById('appsSearchInput').focus(); handleAppSearch(); }
-            });
-        });
-    }
-
-    function handleAppSearch() {
-        const q = document.getElementById('appsSearchInput').value.trim().toLowerCase();
-        if (!q) return renderApps(appsData);
-        renderApps(appsData.filter(a =>
-            a.name.toLowerCase().includes(q) ||
-            (a.description || '').toLowerCase().includes(q) ||
-            (a.creator_name || '').toLowerCase().includes(q)
-        ));
-    }
-
-    // ==========================================
-    // APPS (from Supabase apps table)
-    // ==========================================
-    async function loadApps() {
-        try {
-            const { data, error } = await sb
-                .from('apps')
-                .select('*, profiles(display_name, username)')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            appsData = (data || []).map(a => ({
-                ...a,
-                creator_name: a.profiles?.display_name || a.profiles?.username || ''
-            }));
-        } catch (e) {
-            console.warn('Apps load error:', e);
-            appsData = [];
-        }
-        renderApps(appsData);
-    }
-
-    function renderApps(apps) {
-        const el = document.getElementById('appsList');
-        if (!apps.length) {
-            el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📱</div><div class="empty-state-text">עדיין אין אפליקציות.<br>היה הראשון לשתף!</div></div>`;
-            return;
-        }
-        el.innerHTML = apps.map(a => {
-            const url = a.website_url || a.app_store_url || a.play_store_url || '#';
-            const domain = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
-            return `
-            <a href="${esc(url)}" target="_blank" rel="noopener" class="app-card glass" style="text-decoration:none;color:var(--text)">
-                <div class="app-icon">
-                    ${a.icon_url
-                        ? `<img src="${esc(a.icon_url)}" alt="" onerror="this.style.display='none'">`
-                        : domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="" onerror="this.style.display='none'">` : '📱'
-                    }
-                </div>
-                <div class="app-info">
-                    <div class="app-name">${esc(a.name)} ${a.status ? `<span class="app-badge">${esc(a.status)}</span>` : ''}</div>
-                    <div class="app-desc">${esc(a.description || '')}</div>
-                    ${a.creator_name ? `<div class="app-meta">מאת ${esc(a.creator_name)}</div>` : ''}
-                </div>
-            </a>`;
-        }).join('');
-    }
-
-    // ==========================================
-    // PROMPTS (from Supabase prompts table)
-    // ==========================================
-    async function loadPrompts() {
-        try {
-            const { data, error } = await sb
-                .from('prompts')
-                .select('*, profiles(display_name)')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            promptsData = data || [];
-        } catch (e) {
-            console.warn('Prompts load error:', e);
-            promptsData = [];
-        }
-        renderPrompts(promptsData.slice(0, promptsLimit));
-        document.getElementById('showMorePrompts').style.display = promptsData.length > promptsLimit ? 'block' : 'none';
-    }
-
-    function renderPrompts(prompts) {
-        const el = document.getElementById('promptsList');
-        if (!promptsData.length) {
-            el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💡</div><div class="empty-state-text">עדיין אין פרומפטים.<br>שתף פרומפט שעבד לך!</div></div>`;
-            return;
-        }
-        el.innerHTML = prompts.map((p, i) => `
-            <div class="prompt-card glass" onclick="openPromptModal(${i})">
-                <div class="prompt-title">${esc(p.title)}</div>
-                <div class="prompt-preview">${esc(p.content)}</div>
+function renderApps(apps) {
+    const el = document.getElementById('appsList');
+    if (!apps.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📱</div><div class="empty-state-text">עדיין אין אפליקציות. היה הראשון לשתף!</div></div>'; return; }
+    el.innerHTML = apps.map(a => {
+        const url = getAppUrl(a);
+        const fav = a.icon_url || getFavicon(url);
+        const p = a.profiles;
+        return `<div class="app-card glass" onclick="showAppDetail('${a.id}')">
+            <div class="app-icon"><img src="${esc(fav)}" alt="" onerror="this.parentElement.innerHTML='📱'"></div>
+            <div class="app-info">
+                <div class="app-name">${esc(a.name)} ${a.status ? `<span class="app-badge">${esc(a.status)}</span>` : ''}</div>
+                <div class="app-desc">${esc(a.description||'')}</div>
             </div>
-        `).join('');
-    }
+            ${p ? `<div class="app-creator" onclick="event.stopPropagation();showProfile('${p.id}')">
+                <span class="app-creator-name">${esc(p.display_name||p.username||'')}</span>
+                <img class="app-creator-avatar" src="${esc(p.avatar_url||'')}" alt="" onerror="this.style.display='none'">
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
 
-    function loadMorePrompts() {
-        promptsLimit += 8;
-        renderPrompts(promptsData.slice(0, promptsLimit));
-        document.getElementById('showMorePrompts').style.display = promptsData.length > promptsLimit ? 'block' : 'none';
-    }
-
-    function openPromptModal(i) {
-        const p = promptsData[i];
-        if (!p) return;
-        document.getElementById('promptModalTitle').textContent = p.title;
-        document.getElementById('promptModalContent').textContent = p.content;
-        openModal('modalPrompt');
-    }
-
-    function copyPrompt() {
-        navigator.clipboard.writeText(document.getElementById('promptModalContent').textContent).then(() => {
-            const btn = document.querySelector('#modalPrompt .glass-btn');
-            btn.textContent = 'הועתק!';
-            setTimeout(() => btn.textContent = 'העתק פרומפט', 1500);
-        });
-    }
-
-    // ==========================================
-    // NEWS (RSS)
-    // ==========================================
-    async function loadNews() {
-        const el = document.getElementById('newsList');
-        const feeds = [
-            'https://techcrunch.com/feed/',
-            'https://www.theverge.com/rss/index.xml',
-        ];
-        try {
-            const results = [];
-            for (const feedUrl of feeds) {
-                try {
-                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=6`);
-                    const data = await res.json();
-                    if (data.items) results.push(...data.items.map(item => ({
-                        title: item.title,
-                        link: item.link,
-                        desc: (item.description || '').replace(/<[^>]*>/g, '').slice(0, 150),
-                        source: data.feed?.title || '',
-                        date: item.pubDate,
-                    })));
-                } catch {}
-            }
-            results.sort((a, b) => new Date(b.date) - new Date(a.date));
-            if (!results.length) {
-                el.innerHTML = '<div class="empty-state"><div class="empty-state-text">לא הצלחנו לטעון חדשות</div></div>';
-                return;
-            }
-            el.innerHTML = results.slice(0, 12).map(n => `
-                <a href="${esc(n.link)}" target="_blank" rel="noopener" class="news-card glass">
-                    <div class="news-source">${esc(n.source)}</div>
-                    <div class="news-title">${esc(n.title)}</div>
-                    <div class="news-desc">${esc(n.desc)}</div>
-                </a>
-            `).join('');
-        } catch {
-            el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת חדשות</div></div>';
-        }
-    }
-
-    // ==========================================
-    // TOOLS RENDER
-    // ==========================================
-    function renderTools(id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.innerHTML = tools.map(t => {
-            const domain = new URL(t.url).hostname;
-            return `<a href="${esc(t.url)}" target="_blank" rel="noopener" class="tool-row">
-                <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="" class="tool-favicon" onerror="this.style.display='none'">
-                <span class="tool-name">${esc(t.name)}</span>
-                <span class="tool-desc">${esc(t.desc)}</span>
-            </a>`;
-        }).join('');
-    }
-
-    // ==========================================
-    // AUTH
-    // ==========================================
-    async function signInWithGoogle() {
-        const { error } = await sb.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: window.location.origin + window.location.pathname }
-        });
-        if (error) alert('שגיאה: ' + error.message);
-    }
-
-    async function signOut() {
-        await sb.auth.signOut();
-        currentUser = null;
-        userProfile = null;
-        closeAllModals();
-        updateUI();
-    }
-
-    async function loadProfile() {
-        if (!currentUser) return;
-        try {
-            // Find profile by user_id (auth uid)
-            const { data } = await sb.from('profiles').select('*').eq('user_id', currentUser.id).single();
-            userProfile = data;
-        } catch (e) {
-            console.warn('Profile load error:', e);
-            // Profile might not exist yet - will be created by trigger or manually
-        }
-    }
-
-    async function saveProfile() {
-        if (!currentUser || !userProfile) return;
-        const displayName = document.getElementById('profileDisplayName').value.trim();
-        const username = document.getElementById('profileUsername').value.trim();
-
-        const { error } = await sb.from('profiles').update({
-            display_name: displayName,
-            username: username,
-        }).eq('id', userProfile.id);
-
-        if (error) { alert('שגיאה: ' + error.message); return; }
-        userProfile = { ...userProfile, display_name: displayName, username };
-        updateUI();
-        alert('נשמר!');
-    }
-
-    function handleAvatarClick() {
-        if (currentUser && userProfile) {
-            document.getElementById('profileDisplayName').value = userProfile.display_name || '';
-            document.getElementById('profileUsername').value = userProfile.username || '';
-            loadMyPosts();
-            openModal('modalProfile');
-        } else {
-            openModal('modalAuth');
-        }
-    }
-
-    async function loadMyPosts() {
-        if (!userProfile) return;
-        const el = document.getElementById('myPostsList');
-        try {
-            const [appsRes, promptsRes] = await Promise.all([
-                sb.from('apps').select('id, name').eq('profile_id', userProfile.id).order('created_at', { ascending: false }),
-                sb.from('prompts').select('id, title').eq('profile_id', userProfile.id).order('created_at', { ascending: false }),
-            ]);
-            const items = [
-                ...(appsRes.data || []).map(a => ({ id: a.id, title: a.name, type: 'app' })),
-                ...(promptsRes.data || []).map(p => ({ id: p.id, title: p.title, type: 'prompt' })),
-            ];
-            if (!items.length) {
-                el.innerHTML = '<div class="empty-state"><div class="empty-state-text">אין פוסטים עדיין</div></div>';
-                return;
-            }
-            el.innerHTML = items.map(item => `
-                <div class="post-item">
-                    <span class="post-item-title">${item.type === 'app' ? '📱' : '💡'} ${esc(item.title)}</span>
-                    <div class="post-actions">
-                        <button class="post-action-btn delete" onclick="deletePost('${item.type}','${item.id}')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </button>
-                    </div>
+// ====== APP DETAIL PAGE ======
+async function showAppDetail(appId) {
+    previousPage = currentPage;
+    switchPage('app');
+    const el = document.getElementById('appDetailContent');
+    el.innerHTML = '<div class="spinner"></div>';
+    try {
+        const { data: a } = await sb.from('apps').select('*, profiles(id, display_name, username, avatar_url)').eq('id', appId).single();
+        if (!a) { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">לא נמצאה</div></div>'; return; }
+        const url = getAppUrl(a);
+        const fav = a.icon_url || getFavicon(url, 128);
+        const p = a.profiles;
+        el.innerHTML = `
+            <div style="text-align:center;padding:20px 0">
+                <img src="${esc(fav)}" class="app-detail-icon" onerror="this.style.display='none'">
+                <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0 4px">${esc(a.name)}</h1>
+                ${a.status ? `<span class="app-badge" style="font-size:.8rem;padding:4px 12px">${esc(a.status)}</span>` : ''}
+                ${a.description ? `<p style="color:var(--text-dim);margin:16px 0;line-height:1.6;font-size:.95rem">${esc(a.description)}</p>` : ''}
+                ${url ? `<a href="${esc(url)}" target="_blank" class="glass-btn primary" style="margin:16px auto;display:inline-flex">בקר באתר</a>` : ''}
+            </div>
+            ${p ? `<div class="glass" style="padding:14px;margin-top:16px;cursor:pointer" onclick="showProfile('${p.id}')">
+                <div style="display:flex;align-items:center;gap:12px">
+                    <img src="${esc(p.avatar_url||'')}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border)" onerror="this.style.display='none'">
+                    <div><div style="font-weight:700">${esc(p.display_name||p.username||'')}</div><div style="font-size:.8rem;color:var(--text-dim)">יוצר האפליקציה</div></div>
                 </div>
-            `).join('');
-        } catch {
-            el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינה</div></div>';
-        }
-    }
+            </div>` : ''}`;
+    } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינה</div></div>'; }
+}
 
-    async function deletePost(type, id) {
-        if (!confirm('בטוח למחוק?')) return;
-        await sb.from(type === 'app' ? 'apps' : 'prompts').delete().eq('id', id);
+// ====== PROFILE PAGE ======
+async function showProfile(profileId) {
+    previousPage = currentPage;
+    switchPage('profile');
+    const el = document.getElementById('profilePageContent');
+    el.innerHTML = '<div class="spinner"></div>';
+    try {
+        const [profRes, appsRes, promptsRes] = await Promise.all([
+            sb.from('profiles').select('*').eq('id', profileId).single(),
+            sb.from('apps').select('*').eq('profile_id', profileId).order('created_at', { ascending: false }),
+            sb.from('prompts').select('*').eq('profile_id', profileId).order('created_at', { ascending: false }),
+        ]);
+        const prof = profRes.data;
+        const apps = appsRes.data || [];
+        const prompts = promptsRes.data || [];
+        const isOwn = userProfile?.id === profileId;
+
+        el.innerHTML = `
+            <div class="profile-header">
+                <img src="${esc(prof?.avatar_url||'')}" class="profile-avatar-lg" onerror="this.style.display='none'">
+                <div class="profile-name-lg">${esc(prof?.display_name||prof?.username||'משתמש')}</div>
+                ${prof?.username ? `<div class="profile-username-lg">@${esc(prof.username)}</div>` : ''}
+                ${prof?.bio ? `<div class="profile-bio-lg">${esc(prof.bio)}</div>` : ''}
+            </div>
+            ${isOwn ? `<button class="glass-btn primary" style="width:100%;margin:12px 0 20px" onclick="openCreateForm('app')">העלה אפליקציה חדשה</button>` : ''}
+            <h3 class="section-title" style="font-size:1.2rem;margin-top:8px">אפליקציות (${apps.length})</h3>
+            ${apps.length ? apps.map(a => {
+                const url = getAppUrl(a); const fav = a.icon_url || getFavicon(url);
+                return `<div class="app-card glass" onclick="showAppDetail('${a.id}')">
+                    <div class="app-icon"><img src="${esc(fav)}" alt="" onerror="this.parentElement.innerHTML='📱'"></div>
+                    <div class="app-info"><div class="app-name">${esc(a.name)}</div><div class="app-desc">${esc(a.description||'')}</div></div>
+                </div>`;
+            }).join('') : '<div class="empty-state"><div class="empty-state-text">אין אפליקציות עדיין</div></div>'}
+            <h3 class="section-title" style="font-size:1.2rem">פרומפטים (${prompts.length})</h3>
+            ${prompts.length ? prompts.map((p, i) => `
+                <div class="prompt-card glass" onclick="openPromptFromData('${esc(p.title).replace(/'/g,"\\'")}','${esc(p.content).replace(/'/g,"\\'")}')">
+                    <div class="prompt-title">${esc(p.title)}</div>
+                    <div class="prompt-preview">${esc(p.content)}</div>
+                </div>
+            `).join('') : '<div class="empty-state"><div class="empty-state-text">אין פרומפטים עדיין</div></div>'}`;
+    } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת הפרופיל</div></div>'; }
+}
+
+// ====== PROMPTS ======
+async function loadPrompts() {
+    try {
+        const { data } = await sb.from('prompts').select('*, profiles(display_name)').order('created_at', { ascending: false });
+        promptsData = data || [];
+    } catch { promptsData = []; }
+    renderPrompts(promptsData.slice(0, promptsLimit));
+    document.getElementById('showMorePrompts').style.display = promptsData.length > promptsLimit ? 'block' : 'none';
+}
+function renderPrompts(prompts) {
+    const el = document.getElementById('promptsList');
+    if (!promptsData.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💡</div><div class="empty-state-text">עדיין אין פרומפטים. שתף פרומפט שעבד לך!</div></div>'; return; }
+    el.innerHTML = prompts.map((p, i) => `
+        <div class="prompt-card glass" onclick="openPromptModal(${i})">
+            <div class="prompt-title">${esc(p.title)}</div>
+            <div class="prompt-preview">${esc(p.content)}</div>
+        </div>`).join('');
+}
+function loadMorePrompts() {
+    promptsLimit += 8;
+    renderPrompts(promptsData.slice(0, promptsLimit));
+    document.getElementById('showMorePrompts').style.display = promptsData.length > promptsLimit ? 'block' : 'none';
+}
+function openPromptModal(i) {
+    const p = promptsData[i]; if (!p) return;
+    document.getElementById('promptModalTitle').textContent = p.title;
+    document.getElementById('promptModalContent').textContent = p.content;
+    openModal('modalPrompt');
+}
+function openPromptFromData(title, content) {
+    document.getElementById('promptModalTitle').textContent = title;
+    document.getElementById('promptModalContent').textContent = content;
+    openModal('modalPrompt');
+}
+function copyPrompt() {
+    navigator.clipboard.writeText(document.getElementById('promptModalContent').textContent).then(() => {
+        const b = document.querySelector('#modalPrompt .glass-btn'); b.textContent = 'הועתק!'; setTimeout(() => b.textContent = 'העתק פרומפט', 1500);
+    });
+}
+
+// ====== MEMBERS ======
+async function loadMembers() {
+    try {
+        const { data } = await sb.from('profiles').select('id, display_name, username, avatar_url');
+        membersData = shuffle((data || []).filter(p => p.display_name || p.username));
+    } catch { membersData = []; }
+    renderMembers();
+}
+function renderMembers() {
+    const el = document.getElementById('membersList');
+    if (!membersData.length) { el.innerHTML = '<div class="empty-state" style="padding:20px"><div class="empty-state-text">עדיין אין משתתפים</div></div>'; return; }
+    el.innerHTML = membersData.map(m => `
+        <div class="member-item" onclick="showProfile('${m.id}')">
+            <img class="member-avatar" src="${esc(m.avatar_url||'')}" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23333%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2240%22>${(m.display_name||m.username||'?')[0]}</text></svg>'">
+            <span class="member-name">${esc(m.display_name || m.username)}</span>
+        </div>`).join('');
+}
+
+// ====== NEWS (vibe coding) ======
+async function loadNews() {
+    const el = document.getElementById('newsList');
+    try {
+        const rssUrl = 'https://news.google.com/rss/search?q=%22vibe+coding%22&hl=en-US&gl=US&ceid=US:en';
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=15`);
+        const data = await res.json();
+        const items = data.items || [];
+        if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">אין חדשות כרגע</div></div>'; return; }
+        el.innerHTML = items.map(n => `
+            <a href="${esc(n.link)}" target="_blank" rel="noopener" class="news-card glass">
+                <div class="news-source">${esc(n.author || data.feed?.title || '')}</div>
+                <div class="news-title">${esc(n.title)}</div>
+                <div class="news-desc">${esc((n.description||'').replace(/<[^>]*>/g,'').slice(0, 150))}</div>
+            </a>`).join('');
+    } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת חדשות</div></div>'; }
+}
+
+// ====== TOOLS RENDER ======
+function renderTools(id) {
+    const el = document.getElementById(id); if (!el) return;
+    el.innerHTML = tools.map(t => `<a href="${esc(t.url)}" target="_blank" rel="noopener" class="tool-row">
+        <img src="${getFavicon(t.url)}" alt="" class="tool-favicon" onerror="this.style.display='none'">
+        <span class="tool-name">${esc(t.name)}</span><span class="tool-desc">${esc(t.desc)}</span></a>`).join('');
+}
+
+// ====== AUTH ======
+async function signInWithGoogle() {
+    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
+    if (error) alert('שגיאה: ' + error.message);
+}
+async function signOut() {
+    await sb.auth.signOut(); currentUser = null; userProfile = null; closeAllModals(); updateUI();
+}
+async function loadProfile() {
+    if (!currentUser) return;
+    try { const { data } = await sb.from('profiles').select('*').eq('user_id', currentUser.id).single(); userProfile = data; } catch {}
+}
+async function saveProfile() {
+    if (!currentUser || !userProfile) return;
+    const dn = document.getElementById('profileDisplayName').value.trim();
+    const un = document.getElementById('profileUsername').value.trim();
+    const { error } = await sb.from('profiles').update({ display_name: dn, username: un }).eq('id', userProfile.id);
+    if (error) { alert('שגיאה: ' + error.message); return; }
+    userProfile = { ...userProfile, display_name: dn, username: un };
+    updateUI(); alert('נשמר!');
+}
+
+function handleAvatarClick() {
+    if (currentUser && userProfile) {
+        document.getElementById('profileDisplayName').value = userProfile.display_name || '';
+        document.getElementById('profileUsername').value = userProfile.username || '';
         loadMyPosts();
-        if (type === 'app') await loadApps();
-        else await loadPrompts();
+        openModal('modalProfile');
+    } else { openModal('modalAuth'); }
+}
+
+async function loadMyPosts() {
+    if (!userProfile) return;
+    const [appsRes, promptsRes] = await Promise.all([
+        sb.from('apps').select('id, name, website_url, icon_url, app_store_url, play_store_url').eq('profile_id', userProfile.id).order('created_at', { ascending: false }),
+        sb.from('prompts').select('id, title').eq('profile_id', userProfile.id).order('created_at', { ascending: false }),
+    ]);
+
+    const appsEl = document.getElementById('myAppsList');
+    const apps = appsRes.data || [];
+    if (!apps.length) { appsEl.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;padding:8px 0">אין אפליקציות עדיין</div>'; }
+    else { appsEl.innerHTML = apps.map(a => {
+        const fav = a.icon_url || getFavicon(getAppUrl(a), 32);
+        return `<div class="post-item">
+            <img class="post-item-icon" src="${esc(fav)}" onerror="this.style.display='none'">
+            <span class="post-item-title">${esc(a.name)}</span>
+            <button class="post-action-btn delete" onclick="deletePost('app','${a.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div>`;
+    }).join(''); }
+
+    const promptsEl = document.getElementById('myPromptsList');
+    const prompts = promptsRes.data || [];
+    if (!prompts.length) { promptsEl.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;padding:8px 0">אין פרומפטים עדיין</div>'; }
+    else { promptsEl.innerHTML = prompts.map(p => `<div class="post-item">
+        <span class="post-item-title">💡 ${esc(p.title)}</span>
+        <button class="post-action-btn delete" onclick="deletePost('prompt','${p.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    </div>`).join(''); }
+}
+
+async function deletePost(type, id) {
+    if (!confirm('בטוח למחוק?')) return;
+    await sb.from(type === 'app' ? 'apps' : 'prompts').delete().eq('id', id);
+    loadMyPosts();
+    if (type === 'app') await loadApps(); else await loadPrompts();
+}
+
+// ====== CREATE ======
+function openCreateModal() {
+    if (!currentUser) { openModal('modalAuth'); return; }
+    openModal('modalCreate');
+}
+
+function openCreateForm(type) {
+    createType = type;
+    closeAllModals();
+    const titleEl = document.getElementById('createFormTitle');
+    const fieldsEl = document.getElementById('createFormFields');
+
+    if (type === 'app') {
+        titleEl.textContent = 'שתף אפליקציה';
+        fieldsEl.innerHTML = `
+            <div class="form-group"><label class="form-label">שם האפליקציה</label><input type="text" class="form-input" id="createName" placeholder="למשל: VibeKids App"></div>
+            <div class="form-group"><label class="form-label">קישור</label><input type="url" class="form-input" id="createUrl" placeholder="https://..." dir="ltr" oninput="updateFaviconPreview()"></div>
+            <div class="favicon-preview" id="faviconPreview" style="display:none"><img id="faviconPreviewImg" alt=""><div class="favicon-preview-label">תצוגה מקדימה</div></div>
+            <div class="form-group"><label class="form-label">תיאור קצר</label><input type="text" class="form-input" id="createDesc" placeholder="במשפט אחד..."></div>`;
+    } else {
+        titleEl.textContent = 'שתף פרומפט';
+        fieldsEl.innerHTML = `
+            <div class="form-group"><label class="form-label">כותרת</label><input type="text" class="form-input" id="createName" placeholder="למשל: פרומפט לבניית לוגו"></div>
+            <div class="form-group"><label class="form-label">תוכן הפרומפט</label><textarea class="form-input" id="createContent" placeholder="הדבק כאן..." dir="ltr"></textarea></div>`;
     }
+    setTimeout(() => openModal('modalCreateForm'), 200);
+}
 
-    // ==========================================
-    // CREATE
-    // ==========================================
-    function openCreateModal() {
-        if (!currentUser) { openModal('modalAuth'); return; }
-        openModal('modalCreate');
-    }
+function updateFaviconPreview() {
+    const url = document.getElementById('createUrl')?.value.trim();
+    const preview = document.getElementById('faviconPreview');
+    const img = document.getElementById('faviconPreviewImg');
+    try { new URL(url); img.src = getFavicon(url, 128); preview.style.display = 'block'; } catch { preview.style.display = 'none'; }
+}
 
-    function openCreateForm(type) {
-        createType = type;
-        closeModal('modalCreate');
-        const titleEl = document.getElementById('createFormTitle');
-        const fieldsEl = document.getElementById('createFormFields');
-
-        if (type === 'app') {
-            titleEl.textContent = 'שתף אפליקציה';
-            fieldsEl.innerHTML = `
-                <div class="form-group"><label class="form-label">שם האפליקציה</label>
-                    <input type="text" class="form-input" id="createName" placeholder="למשל: VibeKids App"></div>
-                <div class="form-group"><label class="form-label">קישור לאתר</label>
-                    <input type="url" class="form-input" id="createUrl" placeholder="https://..." dir="ltr"></div>
-                <div class="form-group"><label class="form-label">תיאור קצר</label>
-                    <input type="text" class="form-input" id="createDesc" placeholder="במשפט אחד..."></div>
-            `;
+async function submitCreate() {
+    if (!currentUser || !userProfile) return;
+    const name = document.getElementById('createName')?.value.trim();
+    if (!name) { alert('נא למלא שם/כותרת'); return; }
+    const btn = document.getElementById('createFormSubmit');
+    btn.textContent = 'מפרסם...'; btn.disabled = true;
+    try {
+        if (createType === 'app') {
+            const url = document.getElementById('createUrl')?.value.trim();
+            if (!url) { alert('נא למלא קישור'); return; }
+            const { error } = await sb.from('apps').insert({ name, website_url: url, description: document.getElementById('createDesc')?.value.trim() || '', profile_id: userProfile.id });
+            if (error) throw error;
         } else {
-            titleEl.textContent = 'שתף פרומפט';
-            fieldsEl.innerHTML = `
-                <div class="form-group"><label class="form-label">כותרת</label>
-                    <input type="text" class="form-input" id="createName" placeholder="למשל: פרומפט לבניית לוגו"></div>
-                <div class="form-group"><label class="form-label">תוכן הפרומפט</label>
-                    <textarea class="form-input" id="createContent" placeholder="הדבק כאן את הפרומפט..." dir="ltr"></textarea></div>
-            `;
+            const content = document.getElementById('createContent')?.value.trim();
+            if (!content) { alert('נא למלא תוכן'); return; }
+            const { error } = await sb.from('prompts').insert({ title: name, content, profile_id: userProfile.id });
+            if (error) throw error;
         }
-        setTimeout(() => openModal('modalCreateForm'), 200);
-    }
+        closeAllModals();
+        await Promise.all([loadApps(), loadPrompts()]);
+        switchPage('community');
+    } catch (e) { alert('שגיאה: ' + e.message); }
+    finally { btn.textContent = 'פרסם'; btn.disabled = false; }
+}
 
-    async function submitCreate() {
-        if (!currentUser || !userProfile) return;
-        const name = document.getElementById('createName')?.value.trim();
-        if (!name) { alert('נא למלא שם/כותרת'); return; }
+// ====== MODALS ======
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
+document.querySelectorAll('.modal-overlay').forEach(m => { m.addEventListener('click', () => m.classList.remove('open')); });
 
-        const btn = document.getElementById('createFormSubmit');
-        btn.textContent = 'מפרסם...';
-        btn.disabled = true;
+// ====== UI UPDATE ======
+function updateUI() {
+    const firstName = userProfile?.display_name?.split(' ')[0] || '';
+    const greeting = getGreeting(firstName);
+    document.getElementById('heroGreeting').textContent = greeting;
 
-        try {
-            if (createType === 'app') {
-                const url = document.getElementById('createUrl')?.value.trim();
-                if (!url) { alert('נא למלא קישור'); btn.textContent = 'פרסם'; btn.disabled = false; return; }
-                const { error } = await sb.from('apps').insert({
-                    name,
-                    website_url: url,
-                    description: document.getElementById('createDesc')?.value.trim() || '',
-                    profile_id: userProfile.id,
-                });
-                if (error) throw error;
-            } else {
-                const content = document.getElementById('createContent')?.value.trim();
-                if (!content) { alert('נא למלא תוכן'); btn.textContent = 'פרסם'; btn.disabled = false; return; }
-                const { error } = await sb.from('prompts').insert({
-                    title: name,
-                    content,
-                    profile_id: userProfile.id,
-                });
-                if (error) throw error;
+    // Hero avatar
+    const heroAv = document.getElementById('heroAvatar');
+    if (userProfile?.avatar_url) heroAv.innerHTML = `<img src="${esc(userProfile.avatar_url)}" alt="">`;
+    else if (currentUser) heroAv.innerHTML = (firstName || 'U')[0];
+    else heroAv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+    // Header avatar
+    const headerAv = document.getElementById('headerAvatar');
+    headerAv.innerHTML = heroAv.innerHTML;
+}
+
+// ====== WEBGL SHADER ======
+function initShader() {
+    const container = document.getElementById('shader-bg');
+    if (!container) return;
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'width:100%;height:100%';
+    container.appendChild(canvas);
+    const gl = canvas.getContext('webgl');
+    if (!gl) return;
+
+    const vsSource = `attribute vec4 aVertexPosition; void main() { gl_Position = aVertexPosition; }`;
+    const fsSource = `
+        precision highp float;
+        uniform vec2 iResolution;
+        uniform float iTime;
+        const float overallSpeed = 0.04;
+        const float gridSmoothWidth = 0.015;
+        const float axisWidth = 0.05;
+        const float majorLineWidth = 0.025;
+        const float minorLineWidth = 0.0125;
+        const float majorLineFrequency = 5.0;
+        const float minorLineFrequency = 1.0;
+        const float scale = 5.0;
+        const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0);
+        const float minLineWidth = 0.01;
+        const float maxLineWidth = 0.2;
+        const float lineSpeed = 1.0 * overallSpeed;
+        const float lineAmplitude = 1.0;
+        const float lineFrequency = 0.2;
+        const float warpSpeed = 0.2 * overallSpeed;
+        const float warpFrequency = 0.5;
+        const float warpAmplitude = 1.0;
+        const float offsetFrequency = 0.5;
+        const float offsetSpeed = 1.33 * overallSpeed;
+        const float minOffsetSpread = 0.6;
+        const float maxOffsetSpread = 2.0;
+        const int linesPerGroup = 16;
+        #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
+        #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
+        #define drawCrispLine(pos, halfWidth, t) smoothstep(halfWidth + gridSmoothWidth, halfWidth, abs(pos - (t)))
+        #define drawPeriodicLine(freq, width, t) drawCrispLine(freq / 2.0, width, abs(mod(t, freq) - (freq) / 2.0))
+        float random(float t) { return (cos(t) + cos(t * 1.3 + 1.3) + cos(t * 1.4 + 1.4)) / 3.0; }
+        float getPlasmaY(float x, float horizontalFade, float offset) { return random(x * lineFrequency + iTime * lineSpeed) * horizontalFade * lineAmplitude + offset; }
+        void main() {
+            vec2 uv = gl_FragCoord.xy / iResolution.xy;
+            vec2 space = (gl_FragCoord.xy - iResolution.xy / 2.0) / iResolution.x * 2.0 * scale;
+            float horizontalFade = 1.0 - (cos(uv.x * 6.28) * 0.5 + 0.5);
+            float verticalFade = 1.0 - (cos(uv.y * 6.28) * 0.5 + 0.5);
+            space.y += random(space.x * warpFrequency + iTime * warpSpeed) * warpAmplitude * (0.5 + horizontalFade);
+            space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
+            vec4 lines = vec4(0.0);
+            vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0);
+            vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0);
+            for(int l = 0; l < linesPerGroup; l++) {
+                float nli = float(l) / float(linesPerGroup);
+                float oTime = iTime * offsetSpeed;
+                float oPos = float(l) + space.x * offsetFrequency;
+                float rand = random(oPos + oTime) * 0.5 + 0.5;
+                float hw = mix(minLineWidth, maxLineWidth, rand * horizontalFade) / 2.0;
+                float offset = random(oPos + oTime * (1.0 + nli)) * mix(minOffsetSpread, maxOffsetSpread, horizontalFade);
+                float lp = getPlasmaY(space.x, horizontalFade, offset);
+                float line = drawSmoothLine(lp, hw, space.y) / 2.0 + drawCrispLine(lp, hw * 0.15, space.y);
+                float cx = mod(float(l) + iTime * lineSpeed, 25.0) - 12.0;
+                vec2 cp = vec2(cx, getPlasmaY(cx, horizontalFade, offset));
+                line += drawCircle(cp, 0.01, space) * 4.0;
+                lines += line * lineColor * rand;
             }
-            closeAllModals();
-            await Promise.all([loadApps(), loadPrompts()]);
-            switchPage('community');
-        } catch (e) {
-            alert('שגיאה: ' + e.message);
-        } finally {
-            btn.textContent = 'פרסם';
-            btn.disabled = false;
-        }
-    }
+            vec4 fragColor = mix(bgColor1, bgColor2, uv.x);
+            fragColor *= verticalFade;
+            fragColor.a = 1.0;
+            fragColor += lines;
+            gl_FragColor = fragColor;
+        }`;
 
-    // ==========================================
-    // MODALS
-    // ==========================================
-    function openModal(id) { document.getElementById(id).classList.add('open'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-    function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
-    document.querySelectorAll('.modal-overlay').forEach(m => {
-        m.addEventListener('click', () => m.classList.remove('open'));
-    });
-
-    // ==========================================
-    // UI UPDATE
-    // ==========================================
-    function updateUI() {
-        const btn = document.getElementById('avatarBtn');
-        if (userProfile?.avatar_url) {
-            btn.innerHTML = `<img src="${esc(userProfile.avatar_url)}" alt="">`;
-        } else if (currentUser) {
-            btn.innerHTML = (userProfile?.display_name || 'U').charAt(0);
-        } else {
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-        }
-        document.getElementById('topGreeting').textContent = getGreeting(userProfile?.display_name || '');
-    }
-
-    // ==========================================
-    // HELPERS
-    // ==========================================
-    function esc(str) {
-        if (!str) return '';
-        const d = document.createElement('div');
-        d.textContent = str;
-        return d.innerHTML;
-    }
-
-    function shuffle(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-    </script>
+    function loadShader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(s)); return null; } return s; }
+    const vs = loadShader(gl.VERTEX_SHADER, vsSource), fs = loadShader(gl.FRAGMENT_SHADER, fsSource);
+    if (!vs || !fs) return;
+    const prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    const posLoc = gl.getAttribLocation(prog, 'aVertexPosition');
+    const resLoc = gl.getUniformLocation(prog, 'iResolution');
+    const timeLoc = gl.getUniformLocation(prog, 'iTime');
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; gl.viewport(0, 0, canvas.width, canvas.height); }
+    resize(); window.addEventListener('resize', resize);
+    const t0 = Date.now();
+    (function render() { requestAnimationFrame(render); gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); gl.useProgram(prog); gl.uniform2f(resLoc, canvas.width, canvas.height); gl.uniform1f(timeLoc, (Date.now()-t0)/1000); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0); gl.enableVertexAttribArray(posLoc); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); })();
+}
+</script>
 </body>
 </html>
