@@ -526,21 +526,26 @@ function getFavicon(url, size = 64) {
     } catch { return ''; }
 }
 
-// Smart icon fetching for App Store only (returns null if not applicable)
-async function resolveAppIcon(url) {
-    if (!url) return null;
+// Smart icon fetching for App Store via JSONP (bypasses CORS)
+function resolveAppIcon(url) {
+    if (!url) return Promise.resolve(null);
     try {
         const u = new URL(url);
-        if (u.hostname.includes('apps.apple.com')) {
-            const idMatch = u.pathname.match(/\/id(\d+)/);
-            if (idMatch) {
-                const res = await fetch(`https://itunes.apple.com/lookup?id=${idMatch[1]}`);
-                const data = await res.json();
-                return data.results?.[0]?.artworkUrl512 || data.results?.[0]?.artworkUrl100 || null;
-            }
-        }
-    } catch {}
-    return null;
+        if (!u.hostname.includes('apps.apple.com')) return Promise.resolve(null);
+        const idMatch = u.pathname.match(/\/id(\d+)/);
+        if (!idMatch) return Promise.resolve(null);
+        return new Promise(resolve => {
+            const cbName = '_itunes_' + idMatch[1];
+            const timeout = setTimeout(() => { cleanup(); resolve(null); }, 5000);
+            function cleanup() { clearTimeout(timeout); delete window[cbName]; const s = document.querySelector(`script[data-cb="${cbName}"]`); if (s) s.remove(); }
+            window[cbName] = data => { cleanup(); resolve(data.results?.[0]?.artworkUrl512 || data.results?.[0]?.artworkUrl100 || null); };
+            const script = document.createElement('script');
+            script.src = `https://itunes.apple.com/lookup?id=${idMatch[1]}&callback=${cbName}`;
+            script.dataset.cb = cbName;
+            script.onerror = () => { cleanup(); resolve(null); };
+            document.head.appendChild(script);
+        });
+    } catch { return Promise.resolve(null); }
 }
 function getAppUrl(a) { return a.website_url || a.app_store_url || a.play_store_url || ''; }
 
