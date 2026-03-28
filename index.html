@@ -188,7 +188,18 @@
 
         /* === BACK BTN === */
         .back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 0;background:none;border:none;color:var(--accent);font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;margin-bottom:8px}
-        .back-btn svg{width:18px;height:18px}
+        .back-btn svg{width:18px;height:18px;transform:scaleX(-1)}
+
+        /* === AVATAR UPLOAD === */
+        .avatar-upload{position:relative;display:inline-block;cursor:pointer;margin-bottom:16px}
+        .avatar-upload-img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--border);background:var(--surface);display:block;margin:0 auto}
+        .avatar-upload-badge{position:absolute;bottom:0;right:calc(50% - 40px);width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);font-size:.8rem}
+        .avatar-upload input[type=file]{display:none}
+
+        /* === REPORT BTN === */
+        .report-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-full);background:transparent;border:1px solid rgba(239,68,68,.2);color:rgba(239,68,68,.7);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .3s;margin-top:12px}
+        .report-btn:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.4);color:#ef4444}
+        .report-btn svg{width:16px;height:16px}
 
         /* === MODALS === */
         .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:flex-end;justify-content:center}
@@ -293,10 +304,6 @@
             <div class="pdf-frame"><iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" loading="lazy"></iframe></div>
         </div>
 
-        <!-- Tools -->
-        <h2 class="section-title">כלי וייב קודינג</h2>
-        <div class="tools-grid" id="toolsGrid"></div>
-
         <!-- Members -->
         <h2 class="section-title">משתתפים</h2>
         <div class="members-scroll" id="membersList"></div>
@@ -380,6 +387,13 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-handle"></div>
         <div class="modal-title">הפרופיל שלי</div>
+        <div style="text-align:center">
+            <label class="avatar-upload" id="avatarUploadLabel">
+                <img id="profileAvatarPreview" class="avatar-upload-img" src="" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23333%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2236%22>?</text></svg>'">
+                <div class="avatar-upload-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+                <input type="file" accept="image/*" onchange="uploadAvatar(event)">
+            </label>
+        </div>
         <div class="form-group"><label class="form-label">שם תצוגה</label><input type="text" class="form-input" id="profileDisplayName" placeholder="השם שלך"></div>
         <div class="form-group"><label class="form-label">שם משתמש</label><input type="text" class="form-input" id="profileUsername" placeholder="username" dir="ltr"></div>
         <button class="glass-btn primary" style="width:100%;margin-bottom:20px" onclick="saveProfile()">שמור</button>
@@ -416,6 +430,30 @@
                 <div><div>פרומפט</div><div style="font-size:.8rem;font-weight:400;color:var(--text-dim)">שתף פרומפט שעבד לך</div></div>
             </button>
         </div>
+    </div>
+</div>
+
+<!-- MODAL: Report User -->
+<div class="modal-overlay" id="modalReport">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">דווח על משתמש</div>
+        <div class="form-group">
+            <label class="form-label">סיבה</label>
+            <select class="form-input" id="reportReason" style="appearance:auto">
+                <option value="">בחר סיבה...</option>
+                <option value="spam">ספאם</option>
+                <option value="inappropriate">תוכן לא הולם</option>
+                <option value="harassment">הטרדה</option>
+                <option value="fake">פרופיל מזויף</option>
+                <option value="other">אחר</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">פרטים נוספים (אופציונלי)</label>
+            <textarea class="form-input" id="reportDescription" placeholder="תאר את הבעיה..." style="min-height:80px"></textarea>
+        </div>
+        <button class="glass-btn" style="width:100%;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="submitReport()">שלח דיווח</button>
     </div>
 </div>
 
@@ -535,7 +573,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     initShader();
     initTheme();
     initScrollObserver();
-    renderTools('toolsGrid');
     renderTools('worldToolsGrid');
     initSubTabs();
 
@@ -713,6 +750,7 @@ async function showProfile(profileId) {
                 <div class="profile-name-lg">${esc(prof?.display_name||prof?.username||'משתמש')}</div>
                 ${prof?.username ? `<div class="profile-username-lg">@${esc(prof.username)}</div>` : ''}
                 ${prof?.bio ? `<div class="profile-bio-lg">${esc(prof.bio)}</div>` : ''}
+                ${!isOwn && currentUser ? `<button class="report-btn" onclick="openReportModal('${profileId}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>דווח</button>` : ''}
             </div>
             ${isOwn ? `<button class="glass-btn primary" style="width:100%;margin:12px 0 20px" onclick="openCreateForm('app')">העלה אפליקציה חדשה</button>` : ''}
             <h3 class="section-title" style="font-size:1.2rem;margin-top:8px">אפליקציות (${apps.length})</h3>
@@ -925,9 +963,71 @@ function handleAvatarClick() {
     if (currentUser && userProfile) {
         document.getElementById('profileDisplayName').value = userProfile.display_name || '';
         document.getElementById('profileUsername').value = userProfile.username || '';
+        document.getElementById('profileAvatarPreview').src = userProfile.avatar_url || '';
         loadMyPosts();
         openModal('modalProfile');
     } else { openModal('modalAuth'); }
+}
+
+// ====== AVATAR UPLOAD ======
+async function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (!file || !currentUser || !userProfile) return;
+
+    // Preview immediately
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById('profileAvatarPreview').src = e.target.result; };
+    reader.readAsDataURL(file);
+
+    // Upload to Supabase Storage
+    const ext = file.name.split('.').pop();
+    const path = `avatars/${userProfile.id}.${ext}`;
+    try {
+        const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
+        if (upErr) throw upErr;
+
+        const { data: urlData } = sb.storage.from('avatars').getPublicUrl(path);
+        const avatarUrl = urlData.publicUrl + '?t=' + Date.now(); // cache bust
+
+        const { error: dbErr } = await sb.from('profiles').update({ avatar_url: avatarUrl }).eq('id', userProfile.id);
+        if (dbErr) throw dbErr;
+
+        userProfile.avatar_url = avatarUrl;
+        updateUI();
+    } catch (e) {
+        alert('שגיאה בהעלאת תמונה: ' + e.message);
+    }
+}
+
+// ====== REPORT ======
+let reportTargetId = null;
+
+function openReportModal(profileId) {
+    if (!currentUser) { openModal('modalAuth'); return; }
+    reportTargetId = profileId;
+    document.getElementById('reportReason').value = '';
+    document.getElementById('reportDescription').value = '';
+    openModal('modalReport');
+}
+
+async function submitReport() {
+    if (!currentUser || !userProfile || !reportTargetId) return;
+    const reason = document.getElementById('reportReason').value;
+    if (!reason) { alert('נא לבחור סיבה'); return; }
+
+    try {
+        const { error } = await sb.from('reports').insert({
+            reporter_id: userProfile.id,
+            reported_id: reportTargetId,
+            reason,
+            description: document.getElementById('reportDescription').value.trim() || null,
+        });
+        if (error) throw error;
+        closeModal('modalReport');
+        alert('הדיווח נשלח. תודה!');
+    } catch (e) {
+        alert('שגיאה: ' + e.message);
+    }
 }
 
 async function loadMyPosts() {
@@ -1077,7 +1177,7 @@ function initShader() {
         const float majorLineFrequency = 5.0;
         const float minorLineFrequency = 1.0;
         const float scale = 5.0;
-        const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0);
+        const vec4 lineColor = vec4(0.2, 0.4, 0.9, 1.0);
         const float minLineWidth = 0.01;
         const float maxLineWidth = 0.2;
         const float lineSpeed = 1.0 * overallSpeed;
@@ -1105,8 +1205,8 @@ function initShader() {
             space.y += random(space.x * warpFrequency + iTime * warpSpeed) * warpAmplitude * (0.5 + horizontalFade);
             space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
             vec4 lines = vec4(0.0);
-            vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0);
-            vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0);
+            vec4 bgColor1 = vec4(0.02, 0.05, 0.15, 1.0);
+            vec4 bgColor2 = vec4(0.05, 0.15, 0.35, 1.0);
             for(int l = 0; l < linesPerGroup; l++) {
                 float nli = float(l) / float(linesPerGroup);
                 float oTime = iTime * offsetSpeed;
