@@ -394,10 +394,10 @@
         </div>
         <div class="form-group"><label class="form-label">שם תצוגה</label><input type="text" class="form-input" id="profileDisplayName" placeholder="השם שלך"></div>
         <div class="form-group"><label class="form-label">שם משתמש</label><input type="text" class="form-input" id="profileUsername" placeholder="username" dir="ltr"></div>
-        <div class="form-group"><label class="form-label">GitHub</label><input type="url" class="form-input" id="profileGithub" placeholder="https://github.com/..." dir="ltr"></div>
-        <div class="form-group"><label class="form-label">YouTube</label><input type="url" class="form-input" id="profileYoutube" placeholder="https://youtube.com/@..." dir="ltr"></div>
-        <div class="form-group"><label class="form-label">Twitter / X</label><input type="url" class="form-input" id="profileTwitter" placeholder="https://x.com/..." dir="ltr"></div>
-        <div class="form-group"><label class="form-label">אתר אישי</label><input type="url" class="form-input" id="profileWebsite" placeholder="https://..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">GitHub</label><input type="text" class="form-input" id="profileGithub" placeholder="https://github.com/..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">YouTube</label><input type="text" class="form-input" id="profileYoutube" placeholder="https://youtube.com/@..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">Twitter / X</label><input type="text" class="form-input" id="profileTwitter" placeholder="https://x.com/..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">אתר אישי</label><input type="text" class="form-input" id="profileWebsite" placeholder="https://..." dir="ltr"></div>
         <button class="glass-btn primary" style="width:100%;margin-bottom:20px" onclick="saveProfile()">שמור</button>
         <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px">האפליקציות שלי</h3>
         <div id="myAppsList"></div>
@@ -522,10 +522,7 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.fl
 function getFavicon(url, size = 64) {
     if (!url) return '';
     try {
-        const host = new URL(url).hostname;
-        // Don't show generic store favicons - let async resolve handle these
-        if (host.includes('apps.apple.com') || host.includes('play.google.com')) return '';
-        return `https://www.google.com/s2/favicons?domain=${host}&sz=${size}`;
+        return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`;
     } catch { return ''; }
 }
 
@@ -871,19 +868,21 @@ async function loadProfile() {
 }
 async function saveProfile() {
     if (!currentUser || !userProfile) return;
-    const dn = document.getElementById('profileDisplayName').value.trim();
-    const un = document.getElementById('profileUsername').value.trim();
-    const updates = {
-        display_name: dn, username: un,
-        github_url: document.getElementById('profileGithub').value.trim() || null,
-        youtube_url: document.getElementById('profileYoutube').value.trim() || null,
-        twitter_url: document.getElementById('profileTwitter').value.trim() || null,
-        website_url: document.getElementById('profileWebsite').value.trim() || null,
-    };
-    const { error } = await sb.from('profiles').update(updates).eq('id', userProfile.id);
-    if (error) { alert('שגיאה: ' + error.message); return; }
-    userProfile = { ...userProfile, ...updates };
-    updateUI(); alert('נשמר!');
+    try {
+        const dn = document.getElementById('profileDisplayName').value.trim();
+        const un = document.getElementById('profileUsername').value.trim();
+        const updates = {
+            display_name: dn, username: un,
+            github_url: document.getElementById('profileGithub').value.trim() || null,
+            youtube_url: document.getElementById('profileYoutube').value.trim() || null,
+            twitter_url: document.getElementById('profileTwitter').value.trim() || null,
+            website_url: document.getElementById('profileWebsite').value.trim() || null,
+        };
+        const { error } = await sb.from('profiles').update(updates).eq('id', userProfile.id);
+        if (error) { alert('שגיאה: ' + error.message); return; }
+        userProfile = { ...userProfile, ...updates };
+        updateUI(); alert('נשמר!');
+    } catch (e) { alert('שגיאה: ' + e.message); }
 }
 
 function handleAvatarClick() {
