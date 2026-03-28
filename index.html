@@ -141,10 +141,10 @@
         .show-more-btn:hover{background:var(--surface);border-style:solid}
 
         /* === GUIDE === */
-        .guide-card{padding:20px;margin-bottom:12px}
-        .guide-title{font-size:1.1rem;font-weight:700;margin-bottom:12px}
-        .pdf-frame{width:100%;height:400px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(0,0,0,.3);overflow:hidden}
-        .pdf-frame iframe{width:100%;height:100%;border:none}
+        .guide-card{padding:16px;margin-bottom:12px;text-align:center}
+        .guide-title{font-size:1rem;font-weight:700;margin-bottom:10px}
+        .pdf-frame{width:200px;height:200px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(0,0,0,.3);overflow:hidden;margin:0 auto 12px}
+        .pdf-frame iframe{width:300%;height:300%;border:none;transform:scale(.333);transform-origin:0 0}
 
         /* === TOOLS === */
         .tools-grid{display:flex;flex-direction:column;gap:8px}
@@ -283,11 +283,9 @@
         <!-- Guides -->
         <h2 class="section-title">מדריכים</h2>
         <div class="guide-card glass">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <span class="guide-title" style="margin:0">מדריך Xcode + Cursor</span>
-                <a href="Idea_To_App_AI_Speed.pdf" download class="glass-btn small">הורד PDF</a>
-            </div>
+            <span class="guide-title">מדריך Xcode + Cursor</span>
             <div class="pdf-frame"><iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" loading="lazy"></iframe></div>
+            <a href="Idea_To_App_AI_Speed.pdf" download class="glass-btn small">הורד PDF</a>
         </div>
 
         <!-- Apps -->
@@ -513,52 +511,25 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.fl
 function getFavicon(url, size = 64) {
     if (!url) return '';
     try {
-        const u = new URL(url);
-        const host = u.hostname;
-        const path = u.pathname;
-
-        // App Store: extract icon from iTunes API
-        if (host.includes('apps.apple.com')) {
-            const idMatch = path.match(/\/id(\d+)/);
-            if (idMatch) return `https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/placeholder.png/512x512bb.jpg`;
-            // Will be replaced async by fetchAppStoreIcon
-        }
-
-        // Play Store: use Google favicon (best we can do client-side)
-        if (host.includes('play.google.com')) {
-            const pkgMatch = path.match(/id=([^&]+)/) || u.searchParams.get('id');
-            // Google favicon service gives the Play Store icon
-        }
-
-        return `https://www.google.com/s2/favicons?domain=${host}&sz=${size}`;
+        return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`;
     } catch { return ''; }
 }
 
-// Smart icon fetching: resolve App Store / Play Store icons via their APIs
+// Smart icon fetching for App Store only (returns null if not applicable)
 async function resolveAppIcon(url) {
-    if (!url) return '';
+    if (!url) return null;
     try {
         const u = new URL(url);
-
-        // App Store → iTunes Lookup API
         if (u.hostname.includes('apps.apple.com')) {
             const idMatch = u.pathname.match(/\/id(\d+)/);
             if (idMatch) {
                 const res = await fetch(`https://itunes.apple.com/lookup?id=${idMatch[1]}`);
                 const data = await res.json();
-                if (data.results?.[0]?.artworkUrl512) return data.results[0].artworkUrl512;
-                if (data.results?.[0]?.artworkUrl100) return data.results[0].artworkUrl100;
+                return data.results?.[0]?.artworkUrl512 || data.results?.[0]?.artworkUrl100 || null;
             }
         }
-
-        // Play Store → Google favicon (there's no public API, but Google's favicon service works)
-        if (u.hostname.includes('play.google.com')) {
-            return `https://www.google.com/s2/favicons?domain=play.google.com&sz=128`;
-        }
-
-        // Default: Google favicon service
-        return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=128`;
-    } catch { return getFavicon(url, 128); }
+    } catch {}
+    return null;
 }
 function getAppUrl(a) { return a.website_url || a.app_store_url || a.play_store_url || ''; }
 
@@ -671,20 +642,14 @@ function renderApps(apps) {
         </div>`;
     }).join('');
 
-    // Async: resolve smart icons ONLY for App Store / Play Store links
+    // Async: resolve App Store icons via iTunes API
     el.querySelectorAll('img[data-resolve-url]').forEach(async img => {
-        const url = img.dataset.resolveUrl;
-        if (!url) return;
-        try {
-            const u = new URL(url);
-            if (!u.hostname.includes('apps.apple.com') && !u.hostname.includes('play.google.com')) return;
-            const resolved = await resolveAppIcon(url);
-            if (resolved && img.parentElement) {
-                img.style.display = '';
-                img.onerror = null;
-                img.src = resolved;
-            }
-        } catch {}
+        const resolved = await resolveAppIcon(img.dataset.resolveUrl);
+        if (resolved && img.parentElement) {
+            img.onerror = null;
+            img.style.display = '';
+            img.src = resolved;
+        }
     });
 }
 
@@ -700,8 +665,8 @@ async function showAppDetail(appId) {
         const url = getAppUrl(a);
         const fav = a.icon_url || getFavicon(url, 128);
         const p = a.profiles;
-        // Start smart icon resolve in parallel
-        const iconPromise = a.icon_url ? Promise.resolve(a.icon_url) : resolveAppIcon(url);
+        // Start App Store icon resolve in parallel (returns null for non-store URLs)
+        const iconPromise = a.icon_url ? null : resolveAppIcon(url);
         el.innerHTML = `
             <div style="text-align:center;padding:20px 0">
                 <img id="appDetailImg" src="${esc(fav)}" class="app-detail-icon" onerror="this.style.display='none'">
@@ -715,10 +680,10 @@ async function showAppDetail(appId) {
                     <div><div style="font-weight:700">${esc(p.display_name||p.username||'')}</div><div style="font-size:.8rem;color:var(--text-dim)">יוצר האפליקציה</div></div>
                 </div>
             </div>` : ''}`;
-        // Async: upgrade icon if smart resolve returns better one
-        iconPromise.then(resolved => {
+        // Async: upgrade icon if App Store resolve returns better one
+        if (iconPromise) iconPromise.then(resolved => {
             const img = document.getElementById('appDetailImg');
-            if (resolved && img) img.src = resolved;
+            if (resolved && img) { img.style.display = ''; img.src = resolved; }
         }).catch(() => {});
     } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינה</div></div>'; }
 }
