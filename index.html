@@ -163,18 +163,16 @@
         .member-name{font-size:.75rem;color:var(--text-dim);max-width:64px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
         /* === NEWS === */
-        .news-tabs{display:flex;gap:6px;margin-bottom:16px}
-        .news-tab{padding:8px 18px;border-radius:var(--radius-full);font-size:.85rem;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all .3s;font-family:inherit}
-        .news-tab.active{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.3);color:var(--text)}
-        .news-card{padding:20px;margin-bottom:12px;display:block;text-decoration:none;color:var(--text)}
+        .news-card{padding:16px;margin-bottom:12px;display:flex;gap:14px;text-decoration:none;color:var(--text);direction:ltr;text-align:left}
         .news-card:hover{transform:translateY(-2px)}
-        .news-source{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;color:var(--accent);margin-bottom:10px;letter-spacing:.02em;text-transform:uppercase}
-        .news-source-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
-        .news-title{font-size:1.2rem;font-weight:800;line-height:1.45;margin-bottom:8px}
-        .news-desc{font-size:.9rem;color:var(--text-dim);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-        .news-link{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;color:var(--accent);text-decoration:none;transition:gap .2s}
-        .news-link:hover{gap:10px}
-        .news-link svg{width:16px;height:16px}
+        .news-thumb{width:80px;height:80px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;background:var(--surface-hover);border:1px solid var(--border)}
+        .news-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+        .news-source{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:600;color:var(--accent);margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase}
+        .news-source-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+        .news-title{font-size:1.05rem;font-weight:800;line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .news-link{display:inline-flex;align-items:center;gap:4px;font-size:.8rem;font-weight:600;color:var(--accent);text-decoration:none;transition:gap .2s;margin-top:auto}
+        .news-link:hover{gap:8px}
+        .news-link svg{width:14px;height:14px}
 
         /* === PROFILE PAGE === */
         .profile-header{text-align:center;padding:20px 0 10px}
@@ -328,12 +326,7 @@
 
     <!-- ===== PAGE: WORLD ===== -->
     <div class="page" id="page-world">
-        <h2 class="section-title">חדשות מהעולם</h2>
-        <div class="news-tabs" id="newsTabs">
-            <button class="news-tab active" data-lang="all" onclick="switchNewsTab('all')">הכל</button>
-            <button class="news-tab" data-lang="he" onclick="switchNewsTab('he')">עברית</button>
-            <button class="news-tab" data-lang="en" onclick="switchNewsTab('en')">English</button>
-        </div>
+        <h2 class="section-title">חדשות Vibe Coding</h2>
         <div id="newsList"><div class="spinner"></div></div>
         <h2 class="section-title">כלי וייב קודינג</h2>
         <div class="tools-grid" id="worldToolsGrid"></div>
@@ -830,103 +823,34 @@ function renderMembers() {
 }
 
 // ====== NEWS (vibe coding) ======
-let allNewsItems = [];
-let currentNewsLang = 'all';
-
 async function loadNews() {
     const el = document.getElementById('newsList');
-    allNewsItems = [];
+    try {
+        // HN Algolia: recent stories about vibe coding, sorted by date
+        const res = await fetch('https://hn.algolia.com/api/v1/search_by_date?query=%22vibe+coding%22&tags=story&hitsPerPage=5');
+        const data = await res.json();
+        const items = (data.hits || []).filter(h => h.title && h.url);
 
-    // Source 1: Hacker News Algolia API (reliable, JSON, no CORS issues)
-    const hnQueries = [
-        'vibe coding', 'AI coding tools', 'cursor AI', 'lovable dev', 'bolt new AI',
-    ];
-    const hnFetches = hnQueries.map(async q => {
-        try {
-            const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=8`);
-            const data = await res.json();
-            return (data.hits || []).map(h => ({
-                title: h.title || '',
-                link: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
-                desc: '',
-                source: h.url ? new URL(h.url).hostname.replace('www.', '') : 'Hacker News',
-                date: h.created_at || '',
-                lang: 'en',
-                points: h.points || 0,
-            }));
-        } catch { return []; }
-    });
+        if (!items.length) {
+            el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📰</div><div class="empty-state-text">אין חדשות כרגע</div></div>';
+            return;
+        }
 
-    // Source 2: Google News RSS via DOMParser (fetched through proxy that works in browser)
-    const rssFetches = [
-        { url: 'https://news.google.com/rss/search?q=vibe+coding&hl=iw&gl=IL&ceid=IL:he', lang: 'he' },
-        { url: 'https://news.google.com/rss/search?q=%D7%A7%D7%99%D7%93%D7%95%D7%93+%D7%91%D7%99%D7%A0%D7%94+%D7%9E%D7%9C%D7%90%D7%9B%D7%95%D7%AA%D7%99%D7%AA&hl=iw&gl=IL&ceid=IL:he', lang: 'he' },
-    ].map(async feed => {
-        try {
-            const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`;
-            const res = await fetch(proxy);
-            const text = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/xml');
-            return [...doc.querySelectorAll('item')].slice(0, 10).map(item => ({
-                title: item.querySelector('title')?.textContent || '',
-                link: item.querySelector('link')?.textContent || '',
-                desc: (item.querySelector('description')?.textContent || '').replace(/<[^>]*>/g, '').slice(0, 200),
-                source: item.querySelector('source')?.textContent || 'Google News',
-                date: item.querySelector('pubDate')?.textContent || '',
-                lang: feed.lang,
-                points: 0,
-            }));
-        } catch { return []; }
-    });
-
-    const results = await Promise.allSettled([...hnFetches, ...rssFetches]);
-    results.forEach(r => { if (r.status === 'fulfilled') allNewsItems.push(...r.value); });
-
-    // Deduplicate by title
-    const seen = new Set();
-    allNewsItems = allNewsItems.filter(n => {
-        if (!n.title || seen.has(n.title)) return false;
-        seen.add(n.title);
-        return true;
-    });
-
-    // Sort: HN by points, rest by date
-    allNewsItems.sort((a, b) => {
-        if (a.points && b.points) return b.points - a.points;
-        return new Date(b.date) - new Date(a.date);
-    });
-
-    renderNews();
-}
-
-function switchNewsTab(lang) {
-    currentNewsLang = lang;
-    document.querySelectorAll('#newsTabs .news-tab').forEach(t => t.classList.toggle('active', t.dataset.lang === lang));
-    renderNews();
-}
-
-function renderNews() {
-    const el = document.getElementById('newsList');
-    const filtered = currentNewsLang === 'all' ? allNewsItems : allNewsItems.filter(n => n.lang === currentNewsLang);
-
-    if (!filtered.length) {
-        el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📰</div><div class="empty-state-text">אין חדשות כרגע. נסה שוב מאוחר יותר.</div></div>';
-        return;
+        el.innerHTML = items.map(h => {
+            const domain = (() => { try { return new URL(h.url).hostname.replace('www.',''); } catch { return ''; } })();
+            const thumb = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+            return `<a href="${esc(h.url)}" target="_blank" rel="noopener" class="news-card glass">
+                <img class="news-thumb" src="${thumb}" alt="" onerror="this.style.display='none'">
+                <div class="news-body">
+                    <div class="news-source"><span class="news-source-dot"></span>${esc(domain)}</div>
+                    <div class="news-title">${esc(h.title)}</div>
+                    <span class="news-link">Read more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><polyline points="15 18 9 12 15 6"/></svg></span>
+                </div>
+            </a>`;
+        }).join('');
+    } catch {
+        el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת חדשות</div></div>';
     }
-
-    el.innerHTML = filtered.slice(0, 20).map(n => {
-        const isHe = n.lang === 'he';
-        return `<div class="news-card glass" ${isHe ? '' : 'style="direction:ltr;text-align:left"'}>
-            <div class="news-source"><span class="news-source-dot"></span>${esc(n.source)}</div>
-            <div class="news-title">${esc(n.title)}</div>
-            ${n.desc ? `<div class="news-desc">${esc(n.desc)}</div>` : ''}
-            <a href="${esc(n.link)}" target="_blank" rel="noopener" class="news-link" onclick="event.stopPropagation()">
-                ${isHe ? 'קרא עוד' : 'Read more'}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ${isHe ? '' : 'style="transform:scaleX(-1)"'}><polyline points="15 18 9 12 15 6"/></svg>
-            </a>
-        </div>`;
-    }).join('');
 }
 
 // ====== TOOLS RENDER ======
