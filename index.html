@@ -660,11 +660,11 @@ function renderApps(apps) {
         return `<div class="app-card glass" onclick="showAppDetail('${a.id}')">
             <div class="app-icon"><img src="${esc(fav)}" alt="" data-resolve-url="${esc(url)}" onerror="this.parentElement.innerHTML='📱'"></div>
             <div class="app-info">
-                <div class="app-name">${esc(a.name)} ${a.status ? `<span class="app-badge">${esc(a.status)}</span>` : ''}</div>
+                <div class="app-name">${esc(a.name)}</div>
                 <div class="app-desc">${esc(a.description||'')}</div>
             </div>
             ${p ? `<div class="app-creator" onclick="event.stopPropagation();showProfile('${p.id}')">
-                <span class="app-creator-name">${esc(p.display_name||p.username||'')}</span>
+                <span class="app-creator-name">${esc(p.username||p.display_name||'')}</span>
                 <img class="app-creator-avatar" src="${esc(p.avatar_url||'')}" alt="" onerror="this.style.display='none'">
             </div>` : ''}
         </div>`;
@@ -702,7 +702,6 @@ async function showAppDetail(appId) {
             <div style="text-align:center;padding:20px 0">
                 <img id="appDetailImg" src="${esc(fav)}" class="app-detail-icon" onerror="this.style.display='none'">
                 <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0 4px">${esc(a.name)}</h1>
-                ${a.status ? `<span class="app-badge" style="font-size:.8rem;padding:4px 12px">${esc(a.status)}</span>` : ''}
                 ${a.description ? `<p style="color:var(--text-dim);margin:16px 0;line-height:1.6;font-size:.95rem">${esc(a.description)}</p>` : ''}
                 ${url ? `<a href="${esc(url)}" target="_blank" class="glass-btn primary" style="margin:16px auto;display:inline-flex">בקר באתר</a>` : ''}
             </div>
