@@ -141,10 +141,11 @@
         .show-more-btn:hover{background:var(--surface);border-style:solid}
 
         /* === GUIDE === */
-        .guide-card{padding:16px;margin-bottom:12px;text-align:center}
-        .guide-title{font-size:1rem;font-weight:700;margin-bottom:10px}
-        .pdf-frame{width:200px;height:200px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(0,0,0,.3);overflow:hidden;margin:0 auto 12px}
-        .pdf-frame iframe{width:300%;height:300%;border:none;transform:scale(.333);transform-origin:0 0}
+        .guide-card{padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+        .guide-icon{width:48px;height:48px;flex-shrink:0;color:var(--accent)}
+        .guide-info{flex:1;min-width:0}
+        .guide-title{font-size:1rem;font-weight:700;margin-bottom:4px}
+        .guide-meta{font-size:.8rem;color:var(--text-muted)}
 
         /* === TOOLS === */
         .tools-grid{display:flex;flex-direction:column;gap:8px}
@@ -180,6 +181,10 @@
         .profile-name-lg{font-size:1.3rem;font-weight:800}
         .profile-username-lg{font-size:.85rem;color:var(--text-dim);margin-top:2px}
         .profile-bio-lg{font-size:.9rem;color:var(--text-dim);margin-top:8px;line-height:1.5}
+        .profile-links{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+        .profile-link-btn{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:all .3s;text-decoration:none}
+        .profile-link-btn:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.1)}
+        .profile-link-btn svg{width:18px;height:18px}
 
         /* === APP DETAIL PAGE === */
         .app-detail-icon{width:96px;height:96px;border-radius:24px;object-fit:contain;margin-bottom:16px;border:1px solid var(--border);background:var(--surface)}
@@ -275,18 +280,9 @@
             <div class="hero-greeting" id="heroGreeting"></div>
         </div>
 
-        <!-- Prompts -->
-        <h2 class="section-title">פרומפטים</h2>
-        <div id="promptsList"></div>
-        <button class="show-more-btn" id="showMorePrompts" onclick="loadMorePrompts()" style="display:none">הצג עוד</button>
-
-        <!-- Guides -->
-        <h2 class="section-title">מדריכים</h2>
-        <div class="guide-card glass">
-            <span class="guide-title">מדריך Xcode + Cursor</span>
-            <div class="pdf-frame"><iframe src="Idea_To_App_AI_Speed.pdf#view=FitH" loading="lazy"></iframe></div>
-            <a href="Idea_To_App_AI_Speed.pdf" download class="glass-btn small">הורד PDF</a>
-        </div>
+        <!-- Members -->
+        <h2 class="section-title">משתתפים</h2>
+        <div class="members-scroll" id="membersList"></div>
 
         <!-- Apps -->
         <h2 class="section-title">אפליקציות</h2>
@@ -300,9 +296,20 @@
         </div>
         <div id="appsList"><div class="spinner"></div></div>
 
-        <!-- Members -->
-        <h2 class="section-title">משתתפים</h2>
-        <div class="members-scroll" id="membersList"></div>
+        <!-- Prompts -->
+        <h2 class="section-title">פרומפטים</h2>
+        <div id="promptsList"></div>
+        <button class="show-more-btn" id="showMorePrompts" onclick="loadMorePrompts()" style="display:none">הצג עוד</button>
+
+        <!-- Guides -->
+        <h2 class="section-title">מדריכים</h2>
+        <a href="Idea_To_App_AI_Speed.pdf" download class="guide-card glass" style="text-decoration:none;color:var(--text)">
+            <svg class="guide-icon" viewBox="0 0 48 48" fill="none"><rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2.5" fill="var(--surface)"/><path d="M18 4V14H8" stroke="currentColor" stroke-width="2.5" fill="none"/><text x="24" y="33" text-anchor="middle" fill="currentColor" font-size="10" font-weight="800" font-family="sans-serif">PDF</text></svg>
+            <div class="guide-info">
+                <div class="guide-title">מדריך Xcode + Cursor</div>
+                <div class="guide-meta">לחץ להורדה</div>
+            </div>
+        </a>
 
         <!-- Links -->
         <h2 class="section-title">קישורים</h2>
@@ -387,6 +394,10 @@
         </div>
         <div class="form-group"><label class="form-label">שם תצוגה</label><input type="text" class="form-input" id="profileDisplayName" placeholder="השם שלך"></div>
         <div class="form-group"><label class="form-label">שם משתמש</label><input type="text" class="form-input" id="profileUsername" placeholder="username" dir="ltr"></div>
+        <div class="form-group"><label class="form-label">GitHub</label><input type="url" class="form-input" id="profileGithub" placeholder="https://github.com/..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">YouTube</label><input type="url" class="form-input" id="profileYoutube" placeholder="https://youtube.com/@..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">Twitter / X</label><input type="url" class="form-input" id="profileTwitter" placeholder="https://x.com/..." dir="ltr"></div>
+        <div class="form-group"><label class="form-label">אתר אישי</label><input type="url" class="form-input" id="profileWebsite" placeholder="https://..." dir="ltr"></div>
         <button class="glass-btn primary" style="width:100%;margin-bottom:20px" onclick="saveProfile()">שמור</button>
         <h3 style="font-size:1rem;font-weight:700;margin-bottom:10px">האפליקציות שלי</h3>
         <div id="myAppsList"></div>
@@ -511,7 +522,10 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.fl
 function getFavicon(url, size = 64) {
     if (!url) return '';
     try {
-        return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`;
+        const host = new URL(url).hostname;
+        // Don't show generic store favicons - let async resolve handle these
+        if (host.includes('apps.apple.com') || host.includes('play.google.com')) return '';
+        return `https://www.google.com/s2/favicons?domain=${host}&sz=${size}`;
     } catch { return ''; }
 }
 
@@ -711,6 +725,12 @@ async function showProfile(profileId) {
                 <div class="profile-name-lg">${esc(prof?.display_name||prof?.username||'משתמש')}</div>
                 ${prof?.username ? `<div class="profile-username-lg">@${esc(prof.username)}</div>` : ''}
                 ${prof?.bio ? `<div class="profile-bio-lg">${esc(prof.bio)}</div>` : ''}
+                ${(prof?.github_url || prof?.youtube_url || prof?.twitter_url || prof?.website_url) ? `<div class="profile-links">
+                    ${prof.github_url ? `<a href="${esc(prof.github_url)}" target="_blank" rel="noopener noreferrer" class="profile-link-btn" title="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></a>` : ''}
+                    ${prof.youtube_url ? `<a href="${esc(prof.youtube_url)}" target="_blank" rel="noopener noreferrer" class="profile-link-btn" title="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>` : ''}
+                    ${prof.twitter_url ? `<a href="${esc(prof.twitter_url)}" target="_blank" rel="noopener noreferrer" class="profile-link-btn" title="X / Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>` : ''}
+                    ${prof.website_url ? `<a href="${esc(prof.website_url)}" target="_blank" rel="noopener noreferrer" class="profile-link-btn" title="אתר"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>` : ''}
+                </div>` : ''}
                 ${!isOwn && currentUser ? `<button class="report-btn" onclick="openReportModal('${profileId}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>דווח</button>` : ''}
             </div>
             ${isOwn ? `<button class="glass-btn primary" style="width:100%;margin:12px 0 20px" onclick="openCreateForm('app')">העלה אפליקציה חדשה</button>` : ''}
@@ -853,9 +873,16 @@ async function saveProfile() {
     if (!currentUser || !userProfile) return;
     const dn = document.getElementById('profileDisplayName').value.trim();
     const un = document.getElementById('profileUsername').value.trim();
-    const { error } = await sb.from('profiles').update({ display_name: dn, username: un }).eq('id', userProfile.id);
+    const updates = {
+        display_name: dn, username: un,
+        github_url: document.getElementById('profileGithub').value.trim() || null,
+        youtube_url: document.getElementById('profileYoutube').value.trim() || null,
+        twitter_url: document.getElementById('profileTwitter').value.trim() || null,
+        website_url: document.getElementById('profileWebsite').value.trim() || null,
+    };
+    const { error } = await sb.from('profiles').update(updates).eq('id', userProfile.id);
     if (error) { alert('שגיאה: ' + error.message); return; }
-    userProfile = { ...userProfile, display_name: dn, username: un };
+    userProfile = { ...userProfile, ...updates };
     updateUI(); alert('נשמר!');
 }
 
@@ -863,6 +890,10 @@ function handleAvatarClick() {
     if (currentUser && userProfile) {
         document.getElementById('profileDisplayName').value = userProfile.display_name || '';
         document.getElementById('profileUsername').value = userProfile.username || '';
+        document.getElementById('profileGithub').value = userProfile.github_url || '';
+        document.getElementById('profileYoutube').value = userProfile.youtube_url || '';
+        document.getElementById('profileTwitter').value = userProfile.twitter_url || '';
+        document.getElementById('profileWebsite').value = userProfile.website_url || '';
         document.getElementById('profileAvatarPreview').src = userProfile.avatar_url || '';
         loadMyPosts();
         openModal('modalProfile');
