@@ -160,7 +160,8 @@
         .members-scroll::-webkit-scrollbar{display:none}
         .member-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;transition:transform .2s}
         .member-item:hover{transform:scale(1.05)}
-        .member-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:var(--surface)}
+        .member-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2.5px solid var(--border);background:var(--surface);transition:border-color .3s}
+        .member-item.has-new .member-avatar{border-color:#ef4444;border-width:3px}
         .member-name{font-size:.75rem;color:var(--text-dim);max-width:64px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
         /* === NEWS === */
@@ -810,7 +811,7 @@ async function showProfile(profileId) {
 // ====== PROMPTS ======
 async function loadPrompts() {
     try {
-        const { data } = await sb.from('prompts').select('*, profiles(display_name)').order('created_at', { ascending: false });
+        const { data } = await sb.from('prompts').select('*, profiles(id, display_name, username, avatar_url)').order('created_at', { ascending: false });
         promptsData = data || [];
     } catch { promptsData = []; }
     renderPrompts(promptsData.slice(0, promptsLimit));
@@ -819,11 +820,20 @@ async function loadPrompts() {
 function renderPrompts(prompts) {
     const el = document.getElementById('promptsList');
     if (!promptsData.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💡</div><div class="empty-state-text">עדיין אין פרומפטים. שתף פרומפט שעבד לך!</div></div>'; return; }
-    el.innerHTML = prompts.map((p, i) => `
-        <div class="prompt-card glass" onclick="openPromptModal(${i})">
-            <div class="prompt-title">${esc(p.title)}</div>
-            <div class="prompt-preview">${esc(p.content)}</div>
-        </div>`).join('');
+    el.innerHTML = prompts.map((p, i) => {
+        const pr = p.profiles;
+        return `<div class="prompt-card glass" onclick="openPromptModal(${i})" style="display:flex;gap:12px;align-items:flex-start">
+            ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:48px;height:48px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;border:1px solid var(--border)" onerror="this.style.display='none'">` : ''}
+            <div style="flex:1;min-width:0">
+                <div class="prompt-title">${esc(p.title)}</div>
+                <div class="prompt-preview">${esc(p.content)}</div>
+            </div>
+            ${pr ? `<div class="app-creator" onclick="event.stopPropagation();showProfile('${pr.id}')">
+                <span class="app-creator-name">${esc(pr.username||pr.display_name||'')}</span>
+                <img class="app-creator-avatar" src="${esc(pr.avatar_url||'')}" alt="" onerror="this.style.display='none'">
+            </div>` : ''}
+        </div>`;
+    }).join('');
 }
 function loadMorePrompts() {
     promptsLimit += 8;
@@ -848,21 +858,77 @@ function copyPrompt() {
 }
 
 // ====== MEMBERS ======
+function getVisitedProfiles() {
+    try { return JSON.parse(localStorage.getItem('vk-visited') || '{}'); } catch { return {}; }
+}
+function markProfileVisited(profileId) {
+    const visited = getVisitedProfiles();
+    visited[profileId] = Date.now();
+    localStorage.setItem('vk-visited', JSON.stringify(visited));
+}
+
 async function loadMembers() {
     try {
-        const { data } = await sb.from('profiles').select('id, display_name, username, avatar_url');
-        membersData = shuffle((data || []).filter(p => p.display_name || p.username));
+        // Fetch profiles with their latest activity (most recent app or prompt)
+        const { data: profiles } = await sb.from('profiles').select('id, display_name, username, avatar_url');
+        const { data: latestApps } = await sb.from('apps').select('profile_id, created_at').order('created_at', { ascending: false });
+        const { data: latestPrompts } = await sb.from('prompts').select('profile_id, created_at').order('created_at', { ascending: false });
+
+        // Build a map of profile_id -> latest activity timestamp
+        const activityMap = {};
+        (latestApps || []).forEach(a => {
+            if (!activityMap[a.profile_id] || a.created_at > activityMap[a.profile_id]) activityMap[a.profile_id] = a.created_at;
+        });
+        (latestPrompts || []).forEach(p => {
+            if (!activityMap[p.profile_id] || p.created_at > activityMap[p.profile_id]) activityMap[p.profile_id] = p.created_at;
+        });
+
+        const visited = getVisitedProfiles();
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        membersData = (profiles || [])
+            .filter(p => p.display_name || p.username)
+            .map(p => ({
+                ...p,
+                lastActivity: activityMap[p.id] || null,
+                hasNew: activityMap[p.id] && activityMap[p.id] > weekAgo && (!visited[p.id] || new Date(activityMap[p.id]) > new Date(visited[p.id])),
+            }))
+            .sort((a, b) => {
+                // Visited profiles go to end, then sort by latest activity
+                const aVisited = visited[a.id];
+                const bVisited = visited[b.id];
+                if (a.hasNew && !b.hasNew) return -1;
+                if (!a.hasNew && b.hasNew) return 1;
+                if (a.lastActivity && b.lastActivity) return b.lastActivity.localeCompare(a.lastActivity);
+                if (a.lastActivity) return -1;
+                if (b.lastActivity) return 1;
+                return 0;
+            });
     } catch { membersData = []; }
     renderMembers();
 }
+
 function renderMembers() {
     const el = document.getElementById('membersList');
     if (!membersData.length) { el.innerHTML = '<div class="empty-state" style="padding:20px"><div class="empty-state-text">עדיין אין משתתפים</div></div>'; return; }
     el.innerHTML = membersData.map(m => `
-        <div class="member-item" onclick="showProfile('${m.id}')">
+        <div class="member-item ${m.hasNew ? 'has-new' : ''}" onclick="visitProfile('${m.id}')">
             <img class="member-avatar" src="${esc(m.avatar_url||'')}" alt="" onerror="this.onerror=null;this.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'><circle cx=\\'50\\' cy=\\'50\\' r=\\'50\\' fill=\\'%23333\\'/><text x=\\'50\\' y=\\'68\\' text-anchor=\\'middle\\' fill=\\'white\\' font-size=\\'40\\'>${esc((m.display_name||m.username||'?')[0])}</text></svg>')">
-            <span class="member-name">${esc(m.display_name || m.username)}</span>
+            <span class="member-name">${esc(m.username || m.display_name)}</span>
         </div>`).join('');
+}
+
+function visitProfile(profileId) {
+    markProfileVisited(profileId);
+    // Move visited member to end and remove red ring
+    const idx = membersData.findIndex(m => m.id === profileId);
+    if (idx > -1) {
+        membersData[idx].hasNew = false;
+        const member = membersData.splice(idx, 1)[0];
+        membersData.push(member);
+        renderMembers();
+    }
+    showProfile(profileId);
 }
 
 // ====== NEWS (vibe coding) ======
@@ -1177,7 +1243,8 @@ function openCreateForm(type) {
         titleEl.textContent = 'שתף פרומפט';
         fieldsEl.innerHTML = `
             <div class="form-group"><label class="form-label">כותרת</label><input type="text" class="form-input" id="createName" placeholder="למשל: פרומפט לבניית לוגו"></div>
-            <div class="form-group"><label class="form-label">תוכן הפרומפט</label><textarea class="form-input" id="createContent" placeholder="הדבק כאן..." dir="ltr"></textarea></div>`;
+            <div class="form-group"><label class="form-label">תוכן הפרומפט</label><textarea class="form-input" id="createContent" placeholder="הדבק כאן..." dir="ltr"></textarea></div>
+            <div class="form-group"><label class="form-label">תמונה (אופציונלי)</label><input type="file" accept="image/*" id="createPromptImage" style="color:var(--text-dim);font-size:.85rem"></div>`;
     }
     setTimeout(() => openModal('modalCreateForm'), 200);
 }
@@ -1210,7 +1277,15 @@ async function submitCreate() {
         } else {
             const content = document.getElementById('createContent')?.value.trim();
             if (!content) { alert('נא למלא תוכן'); return; }
-            const { error } = await sb.from('prompts').insert({ title: name, content, profile_id: userProfile.id });
+            let imageUrl = null;
+            const imgFile = document.getElementById('createPromptImage')?.files?.[0];
+            if (imgFile) {
+                const ext = imgFile.type.split('/')[1] === 'jpeg' ? 'jpg' : imgFile.type.split('/')[1];
+                const path = `prompts/${Date.now()}_${userProfile.id}.${ext}`;
+                const { error: upErr } = await sb.storage.from('avatars').upload(path, imgFile, { contentType: imgFile.type });
+                if (!upErr) { const { data: u } = sb.storage.from('avatars').getPublicUrl(path); imageUrl = u.publicUrl; }
+            }
+            const { error } = await sb.from('prompts').insert({ title: name, content, profile_id: userProfile.id, image_url: imageUrl });
             if (error) throw error;
         }
         closeAllModals();
