@@ -163,11 +163,18 @@
         .member-name{font-size:.75rem;color:var(--text-dim);max-width:64px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
         /* === NEWS === */
-        .news-card{padding:16px;margin-bottom:10px;cursor:pointer;text-decoration:none;color:var(--text);display:block}
+        .news-tabs{display:flex;gap:6px;margin-bottom:16px}
+        .news-tab{padding:8px 18px;border-radius:var(--radius-full);font-size:.85rem;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all .3s;font-family:inherit}
+        .news-tab.active{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.3);color:var(--text)}
+        .news-card{padding:20px;margin-bottom:12px;display:block;text-decoration:none;color:var(--text)}
         .news-card:hover{transform:translateY(-2px)}
-        .news-title{font-size:1rem;font-weight:700;margin-bottom:6px;line-height:1.4}
-        .news-source{font-size:.75rem;color:var(--text-muted);margin-bottom:4px}
-        .news-desc{font-size:.85rem;color:var(--text-dim);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .news-source{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;color:var(--accent);margin-bottom:10px;letter-spacing:.02em;text-transform:uppercase}
+        .news-source-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+        .news-title{font-size:1.2rem;font-weight:800;line-height:1.45;margin-bottom:8px}
+        .news-desc{font-size:.9rem;color:var(--text-dim);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        .news-link{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;color:var(--accent);text-decoration:none;transition:gap .2s}
+        .news-link:hover{gap:10px}
+        .news-link svg{width:16px;height:16px}
 
         /* === PROFILE PAGE === */
         .profile-header{text-align:center;padding:20px 0 10px}
@@ -314,7 +321,12 @@
 
     <!-- ===== PAGE: WORLD ===== -->
     <div class="page" id="page-world">
-        <h2 class="section-title">חדשות Vibe Coding</h2>
+        <h2 class="section-title">חדשות מהעולם</h2>
+        <div class="news-tabs" id="newsTabs">
+            <button class="news-tab active" data-lang="all" onclick="switchNewsTab('all')">הכל</button>
+            <button class="news-tab" data-lang="he" onclick="switchNewsTab('he')">עברית</button>
+            <button class="news-tab" data-lang="en" onclick="switchNewsTab('en')">English</button>
+        </div>
         <div id="newsList"><div class="spinner"></div></div>
         <h2 class="section-title">כלי וייב קודינג</h2>
         <div class="tools-grid" id="worldToolsGrid"></div>
@@ -466,7 +478,56 @@ const tools = [
 // ====== HELPERS ======
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function getFavicon(url, size = 64) { try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=${size}`; } catch { return ''; } }
+function getFavicon(url, size = 64) {
+    if (!url) return '';
+    try {
+        const u = new URL(url);
+        const host = u.hostname;
+        const path = u.pathname;
+
+        // App Store: extract icon from iTunes API
+        if (host.includes('apps.apple.com')) {
+            const idMatch = path.match(/\/id(\d+)/);
+            if (idMatch) return `https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/placeholder.png/512x512bb.jpg`;
+            // Will be replaced async by fetchAppStoreIcon
+        }
+
+        // Play Store: use Google favicon (best we can do client-side)
+        if (host.includes('play.google.com')) {
+            const pkgMatch = path.match(/id=([^&]+)/) || u.searchParams.get('id');
+            // Google favicon service gives the Play Store icon
+        }
+
+        return `https://www.google.com/s2/favicons?domain=${host}&sz=${size}`;
+    } catch { return ''; }
+}
+
+// Smart icon fetching: resolve App Store / Play Store icons via their APIs
+async function resolveAppIcon(url) {
+    if (!url) return '';
+    try {
+        const u = new URL(url);
+
+        // App Store → iTunes Lookup API
+        if (u.hostname.includes('apps.apple.com')) {
+            const idMatch = u.pathname.match(/\/id(\d+)/);
+            if (idMatch) {
+                const res = await fetch(`https://itunes.apple.com/lookup?id=${idMatch[1]}`);
+                const data = await res.json();
+                if (data.results?.[0]?.artworkUrl512) return data.results[0].artworkUrl512;
+                if (data.results?.[0]?.artworkUrl100) return data.results[0].artworkUrl100;
+            }
+        }
+
+        // Play Store → Google favicon (there's no public API, but Google's favicon service works)
+        if (u.hostname.includes('play.google.com')) {
+            return `https://www.google.com/s2/favicons?domain=play.google.com&sz=128`;
+        }
+
+        // Default: Google favicon service
+        return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=128`;
+    } catch { return getFavicon(url, 128); }
+}
 function getAppUrl(a) { return a.website_url || a.app_store_url || a.play_store_url || ''; }
 
 // ====== INIT ======
@@ -567,7 +628,7 @@ function renderApps(apps) {
         const fav = a.icon_url || getFavicon(url);
         const p = a.profiles;
         return `<div class="app-card glass" onclick="showAppDetail('${a.id}')">
-            <div class="app-icon"><img src="${esc(fav)}" alt="" onerror="this.parentElement.innerHTML='📱'"></div>
+            <div class="app-icon"><img src="${esc(fav)}" alt="" data-resolve-url="${esc(url)}" onerror="this.parentElement.innerHTML='📱'"></div>
             <div class="app-info">
                 <div class="app-name">${esc(a.name)} ${a.status ? `<span class="app-badge">${esc(a.status)}</span>` : ''}</div>
                 <div class="app-desc">${esc(a.description||'')}</div>
@@ -578,6 +639,19 @@ function renderApps(apps) {
             </div>` : ''}
         </div>`;
     }).join('');
+
+    // Async: resolve smart icons for App Store / Play Store links
+    el.querySelectorAll('img[data-resolve-url]').forEach(async img => {
+        const url = img.dataset.resolveUrl;
+        if (!url) return;
+        try {
+            const u = new URL(url);
+            if (u.hostname.includes('apps.apple.com') || u.hostname.includes('play.google.com')) {
+                const resolved = await resolveAppIcon(url);
+                if (resolved && img.parentElement) img.src = resolved;
+            }
+        } catch {}
+    });
 }
 
 // ====== APP DETAIL PAGE ======
@@ -592,9 +666,11 @@ async function showAppDetail(appId) {
         const url = getAppUrl(a);
         const fav = a.icon_url || getFavicon(url, 128);
         const p = a.profiles;
+        // Start smart icon resolve in parallel
+        const iconPromise = a.icon_url ? Promise.resolve(a.icon_url) : resolveAppIcon(url);
         el.innerHTML = `
             <div style="text-align:center;padding:20px 0">
-                <img src="${esc(fav)}" class="app-detail-icon" onerror="this.style.display='none'">
+                <img id="appDetailImg" src="${esc(fav)}" class="app-detail-icon" onerror="this.style.display='none'">
                 <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0 4px">${esc(a.name)}</h1>
                 ${a.status ? `<span class="app-badge" style="font-size:.8rem;padding:4px 12px">${esc(a.status)}</span>` : ''}
                 ${a.description ? `<p style="color:var(--text-dim);margin:16px 0;line-height:1.6;font-size:.95rem">${esc(a.description)}</p>` : ''}
@@ -606,6 +682,11 @@ async function showAppDetail(appId) {
                     <div><div style="font-weight:700">${esc(p.display_name||p.username||'')}</div><div style="font-size:.8rem;color:var(--text-dim)">יוצר האפליקציה</div></div>
                 </div>
             </div>` : ''}`;
+        // Async: upgrade icon if smart resolve returns better one
+        iconPromise.then(resolved => {
+            const img = document.getElementById('appDetailImg');
+            if (resolved && img) img.src = resolved;
+        }).catch(() => {});
     } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינה</div></div>'; }
 }
 
@@ -711,21 +792,103 @@ function renderMembers() {
 }
 
 // ====== NEWS (vibe coding) ======
+let allNewsItems = [];
+let currentNewsLang = 'all';
+
 async function loadNews() {
     const el = document.getElementById('newsList');
-    try {
-        const rssUrl = 'https://news.google.com/rss/search?q=%22vibe+coding%22&hl=en-US&gl=US&ceid=US:en';
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=15`);
-        const data = await res.json();
-        const items = data.items || [];
-        if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">אין חדשות כרגע</div></div>'; return; }
-        el.innerHTML = items.map(n => `
-            <a href="${esc(n.link)}" target="_blank" rel="noopener" class="news-card glass">
-                <div class="news-source">${esc(n.author || data.feed?.title || '')}</div>
-                <div class="news-title">${esc(n.title)}</div>
-                <div class="news-desc">${esc((n.description||'').replace(/<[^>]*>/g,'').slice(0, 150))}</div>
-            </a>`).join('');
-    } catch { el.innerHTML = '<div class="empty-state"><div class="empty-state-text">שגיאה בטעינת חדשות</div></div>'; }
+    allNewsItems = [];
+
+    // Source 1: Hacker News Algolia API (reliable, JSON, no CORS issues)
+    const hnQueries = [
+        'vibe coding', 'AI coding tools', 'cursor AI', 'lovable dev', 'bolt new AI',
+    ];
+    const hnFetches = hnQueries.map(async q => {
+        try {
+            const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=8`);
+            const data = await res.json();
+            return (data.hits || []).map(h => ({
+                title: h.title || '',
+                link: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+                desc: '',
+                source: h.url ? new URL(h.url).hostname.replace('www.', '') : 'Hacker News',
+                date: h.created_at || '',
+                lang: 'en',
+                points: h.points || 0,
+            }));
+        } catch { return []; }
+    });
+
+    // Source 2: Google News RSS via DOMParser (fetched through proxy that works in browser)
+    const rssFetches = [
+        { url: 'https://news.google.com/rss/search?q=vibe+coding&hl=iw&gl=IL&ceid=IL:he', lang: 'he' },
+        { url: 'https://news.google.com/rss/search?q=%D7%A7%D7%99%D7%93%D7%95%D7%93+%D7%91%D7%99%D7%A0%D7%94+%D7%9E%D7%9C%D7%90%D7%9B%D7%95%D7%AA%D7%99%D7%AA&hl=iw&gl=IL&ceid=IL:he', lang: 'he' },
+    ].map(async feed => {
+        try {
+            const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`;
+            const res = await fetch(proxy);
+            const text = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/xml');
+            return [...doc.querySelectorAll('item')].slice(0, 10).map(item => ({
+                title: item.querySelector('title')?.textContent || '',
+                link: item.querySelector('link')?.textContent || '',
+                desc: (item.querySelector('description')?.textContent || '').replace(/<[^>]*>/g, '').slice(0, 200),
+                source: item.querySelector('source')?.textContent || 'Google News',
+                date: item.querySelector('pubDate')?.textContent || '',
+                lang: feed.lang,
+                points: 0,
+            }));
+        } catch { return []; }
+    });
+
+    const results = await Promise.allSettled([...hnFetches, ...rssFetches]);
+    results.forEach(r => { if (r.status === 'fulfilled') allNewsItems.push(...r.value); });
+
+    // Deduplicate by title
+    const seen = new Set();
+    allNewsItems = allNewsItems.filter(n => {
+        if (!n.title || seen.has(n.title)) return false;
+        seen.add(n.title);
+        return true;
+    });
+
+    // Sort: HN by points, rest by date
+    allNewsItems.sort((a, b) => {
+        if (a.points && b.points) return b.points - a.points;
+        return new Date(b.date) - new Date(a.date);
+    });
+
+    renderNews();
+}
+
+function switchNewsTab(lang) {
+    currentNewsLang = lang;
+    document.querySelectorAll('#newsTabs .news-tab').forEach(t => t.classList.toggle('active', t.dataset.lang === lang));
+    renderNews();
+}
+
+function renderNews() {
+    const el = document.getElementById('newsList');
+    const filtered = currentNewsLang === 'all' ? allNewsItems : allNewsItems.filter(n => n.lang === currentNewsLang);
+
+    if (!filtered.length) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📰</div><div class="empty-state-text">אין חדשות כרגע. נסה שוב מאוחר יותר.</div></div>';
+        return;
+    }
+
+    el.innerHTML = filtered.slice(0, 20).map(n => {
+        const isHe = n.lang === 'he';
+        return `<div class="news-card glass" ${isHe ? '' : 'style="direction:ltr;text-align:left"'}>
+            <div class="news-source"><span class="news-source-dot"></span>${esc(n.source)}</div>
+            <div class="news-title">${esc(n.title)}</div>
+            ${n.desc ? `<div class="news-desc">${esc(n.desc)}</div>` : ''}
+            <a href="${esc(n.link)}" target="_blank" rel="noopener" class="news-link" onclick="event.stopPropagation()">
+                ${isHe ? 'קרא עוד' : 'Read more'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ${isHe ? '' : 'style="transform:scaleX(-1)"'}><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+        </div>`;
+    }).join('');
 }
 
 // ====== TOOLS RENDER ======
@@ -830,11 +993,17 @@ function openCreateForm(type) {
     setTimeout(() => openModal('modalCreateForm'), 200);
 }
 
-function updateFaviconPreview() {
+async function updateFaviconPreview() {
     const url = document.getElementById('createUrl')?.value.trim();
     const preview = document.getElementById('faviconPreview');
     const img = document.getElementById('faviconPreviewImg');
-    try { new URL(url); img.src = getFavicon(url, 128); preview.style.display = 'block'; } catch { preview.style.display = 'none'; }
+    try {
+        new URL(url);
+        preview.style.display = 'block';
+        img.src = getFavicon(url, 128); // Show quick fallback first
+        const resolved = await resolveAppIcon(url); // Then try smart resolve
+        if (resolved) img.src = resolved;
+    } catch { preview.style.display = 'none'; }
 }
 
 async function submitCreate() {
