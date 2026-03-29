@@ -498,7 +498,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 let userProfile = null;
 let currentPage = 'community';
-let previousPage = 'community';
+let navHistory = [];
 let appsData = [];
 let promptsData = [];
 let membersData = [];
@@ -620,7 +620,7 @@ function initScrollObserver() {
 
 // ====== NAVIGATION ======
 function switchPage(page) {
-    if (page !== currentPage) previousPage = currentPage;
+    if (page !== currentPage) navHistory.push(currentPage);
     currentPage = page;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + page)?.classList.add('active');
@@ -638,7 +638,11 @@ function switchPage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function goBack() { switchPage(previousPage || 'community'); }
+function goBack() {
+    const prev = navHistory.pop();
+    if (prev) { currentPage = ''; switchPage(prev); }
+    else switchPage('community');
+}
 
 // ====== SUB TABS ======
 function initSubTabs() {
@@ -702,7 +706,6 @@ function renderApps(apps) {
 
 // ====== APP DETAIL PAGE ======
 async function showAppDetail(appId) {
-    previousPage = currentPage;
     switchPage('app');
     const el = document.getElementById('appDetailContent');
     el.innerHTML = '<div class="spinner"></div>';
@@ -737,7 +740,6 @@ async function showAppDetail(appId) {
 
 // ====== PROFILE PAGE ======
 async function showProfile(profileId) {
-    previousPage = currentPage;
     switchPage('profile');
     const el = document.getElementById('profilePageContent');
     el.innerHTML = '<div class="spinner"></div>';
